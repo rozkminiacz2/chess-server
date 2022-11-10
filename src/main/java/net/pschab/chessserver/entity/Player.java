@@ -1,5 +1,7 @@
 package net.pschab.chessserver.entity;
 
+import com.sun.istack.NotNull;
+
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import java.util.Objects;
@@ -9,8 +11,10 @@ public class Player {
     @Id
     private String name;
 
+    @NotNull
     private String password;
 
+    @NotNull
     private Role role;
 
     public Player() {}
