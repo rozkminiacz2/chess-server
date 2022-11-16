@@ -11,7 +11,6 @@ import java.util.NoSuchElementException;
 import java.util.stream.StreamSupport;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @DataJpaTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
@@ -24,15 +23,23 @@ public class PlayerRepositoryTest {
 
     @Test
     public void shouldSaveNewPlayer() {
-        Player playerToStore = new Player("Player1a", "password123");
+        Player playerToStore = new Player("PlayerRepositoryTest1", "PlayerRepositoryPassword1");
+        makeSurePlayerDoesNotExist(playerToStore.getName());
+
         long initialSize = getPlayerCount();
         playerRepository.save(playerToStore);
         long finalSize = getPlayerCount();
-
-        Player playerFound = playerRepository.findById(playerToStore.getName()).orElse(null);
+        Player playerFound = entityManager.find(Player.class, playerToStore.getName());
 
         assertThat(playerFound).isEqualTo(playerToStore);
         assertThat(finalSize-initialSize).isEqualTo(1);
+    }
+
+    private void makeSurePlayerDoesNotExist(String name) {
+        Player playerToDelete = entityManager.find(Player.class, name);
+        if (playerToDelete != null) {
+            entityManager.remove(playerToDelete);
+        }
     }
 
     private long getPlayerCount() {
@@ -40,12 +47,28 @@ public class PlayerRepositoryTest {
     }
 
     @Test
-    public void shouldUpdatePlayerPassword() {
-        Player playerToUpdate = new Player("Player1c", "password123");
-        entityManager.persist(playerToUpdate);
-        assertThat(playerRepository.findById(playerToUpdate.getName())).isNotEmpty();
+    public void shouldGetPlayerById() {
+        Player playerToGet = new Player("PlayerRepositoryTest2", "PlayerRepositoryPassword2");
+        makeSurePlayerDoesExist(playerToGet);
 
-        String newPassword = "newPassword123";
+        Player playerFound = playerRepository.findById(playerToGet.getName()).orElse(null);
+
+        assertThat(playerFound).isEqualTo(playerToGet);
+    }
+
+    private void makeSurePlayerDoesExist(Player playerToCheck) {
+        Player playerFromDatabase = entityManager.find(Player.class, playerToCheck.getName());
+        if (playerFromDatabase == null) {
+            entityManager.persist(playerToCheck);
+        }
+    }
+
+    @Test
+    public void shouldUpdatePlayerPassword() {
+        Player playerToUpdate = new Player("PlayerRepositoryTest3", "PlayerRepositoryPassword3");
+        makeSurePlayerDoesExist(playerToUpdate);
+
+        String newPassword = "PlayerRepositoryPassword3a";
         playerToUpdate.setPassword(newPassword);
         playerRepository.save(playerToUpdate);
 
@@ -54,16 +77,15 @@ public class PlayerRepositoryTest {
                         String.format("Player with name %s not found in the database.", playerToUpdate.getName())));
 
         assertThat(playerFound.getPassword()).isEqualTo(newPassword);
-
     }
 
     @Test
     public void shouldDeletePlayer() {
-        Player player = new Player("Player1b", "password123");
-        entityManager.persist(player);
-        assertThat(playerRepository.findById(player.getName())).isNotEmpty();
+        Player player = new Player("PlayerRepositoryTest4", "PlayerRepositoryPassword4");
+        makeSurePlayerDoesExist(player);
 
         playerRepository.delete(player);
+
         assertThat(playerRepository.findById(player.getName())).isEmpty();
     }
 }
