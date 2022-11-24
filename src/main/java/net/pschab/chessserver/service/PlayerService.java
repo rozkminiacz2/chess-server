@@ -41,7 +41,8 @@ public class PlayerService {
     }
 
     public boolean deletePlayer(String name) {
-        Player player = playerRepository.findById(name).orElse(null);
+        Player player = playerRepository.findById(name)
+                .orElseThrow(()->new NoSuchElementException(String.format("Player with name %s does not exist in the database.", name)));
         playerRepository.delete(player);
         return true;
     }
