@@ -3,6 +3,8 @@ package net.pschab.chessserver.entity;
 import com.sun.istack.NotNull;
 
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.Id;
 import java.util.Objects;
 
@@ -15,6 +17,7 @@ public class Player {
     private String password;
 
     @NotNull
+    @Enumerated(EnumType.STRING)
     private Role role;
 
     public Player() {}
@@ -28,7 +31,7 @@ public class Player {
     public Player(String name, String password, Role role) {
         this.name = name;
         this.password = password;
-        this.role = role;
+        this.role = role == null ? Role.USER : role;
     }
 
     public String getName() {

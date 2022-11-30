@@ -10,6 +10,8 @@ import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
+import static net.pschab.chessserver.util.HashEncoder.encode;
+
 @Service
 public class PlayerService {
 
@@ -30,14 +32,20 @@ public class PlayerService {
     }
 
     public boolean addNewPlayer(Player player) {
+        Player playerToStore = getValidatedPlayer(player);
+        playerToStore.setPassword(encode(playerToStore.getPassword()));
+        playerRepository.save(playerToStore);
+        return true;
+    }
+
+    private Player getValidatedPlayer(Player player) {
         if (player.getName()==null || player.getName().isBlank()) {
             throw new IllegalArgumentException("Player name cannot be empty.");
         }
         if (player.getPassword()==null || player.getPassword().isBlank()) {
             throw new IllegalArgumentException("Password cannot be empty.");
         }
-        playerRepository.save(player);
-        return true;
+        return new Player(player.getName(), player.getPassword(), player.getRole());
     }
 
     public boolean deletePlayer(String name) {

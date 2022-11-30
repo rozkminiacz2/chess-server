@@ -30,9 +30,9 @@ public class PlayerControllerTest {
 
     @BeforeEach
     public void initialize() {
-        when(playerService.getAllPlayers()).thenReturn(getAllPlayerList());
-        when(playerService.addNewPlayer(createPlayer(TEST_PLAYER_NAME.concat("4")))).thenReturn(true);
-        when(playerService.deletePlayer(TEST_PLAYER_NAME.concat("5"))).thenReturn(true);
+        when(playerService.getAllPlayers()).thenReturn(getThreePlayerList());
+        when(playerService.addNewPlayer(createTestPlayer(PLAYER_NAME.concat("4")))).thenReturn(true);
+        when(playerService.deletePlayer(PLAYER_NAME.concat("5"))).thenReturn(true);
     }
 
     @Test()
@@ -41,14 +41,14 @@ public class PlayerControllerTest {
 
         List<Player> playerList = Arrays.asList(Objects.requireNonNull(response.getBody()));
         assertThat(playerList).isNotNull().isNotEmpty().hasSize(3);
-        assertThat(playerList).contains(createPlayer(TEST_PLAYER_NAME.concat("1")));
-        assertThat(playerList).contains(createPlayer(TEST_PLAYER_NAME.concat("2")));
-        assertThat(playerList).contains(createPlayer(TEST_PLAYER_NAME.concat("3")));
+        assertThat(playerList).contains(createTestPlayer(PLAYER_NAME.concat("1")));
+        assertThat(playerList).contains(createTestPlayer(PLAYER_NAME.concat("2")));
+        assertThat(playerList).contains(createTestPlayer(PLAYER_NAME.concat("3")));
     }
 
     @Test()
     public void addPlayer() {
-        Player playerToAdd = createPlayer(TEST_PLAYER_NAME.concat("4"));
+        Player playerToAdd = createTestPlayer(PLAYER_NAME.concat("4"));
 
         ResponseEntity<Boolean> response = template.postForEntity("/tttserver/players/add", playerToAdd, Boolean.class);
 
@@ -59,7 +59,7 @@ public class PlayerControllerTest {
 
     @Test()
     public void deletePlayer() {
-        Player playerToDelete = createPlayer(TEST_PLAYER_NAME.concat("5"));
+        Player playerToDelete = createTestPlayer(PLAYER_NAME.concat("5"));
         Map<String, String> params = new HashMap<>();
         params.put("name", playerToDelete.getName());
 

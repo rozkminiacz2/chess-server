@@ -10,6 +10,7 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 import java.util.NoSuchElementException;
 import java.util.stream.StreamSupport;
 
+import static net.pschab.chessserver.TestPlayerHelper.*;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @DataJpaTest
@@ -23,7 +24,7 @@ public class PlayerRepositoryTest {
 
     @Test
     public void shouldSaveNewPlayer() {
-        Player playerToStore = new Player("PlayerRepositoryTest1", "PlayerRepositoryPassword1");
+        Player playerToStore = createTestPlayer(PLAYER_NAME.concat("1"));
         makeSurePlayerDoesNotExist(playerToStore.getName());
 
         long initialSize = getPlayerCount();
@@ -48,7 +49,7 @@ public class PlayerRepositoryTest {
 
     @Test
     public void shouldGetPlayerById() {
-        Player playerToGet = new Player("PlayerRepositoryTest2", "PlayerRepositoryPassword2");
+        Player playerToGet = createTestPlayer(PLAYER_NAME.concat("2"));
         makeSurePlayerDoesExist(playerToGet);
 
         Player playerFound = playerRepository.findById(playerToGet.getName()).orElse(null);
@@ -65,10 +66,10 @@ public class PlayerRepositoryTest {
 
     @Test
     public void shouldUpdatePlayerPassword() {
-        Player playerToUpdate = new Player("PlayerRepositoryTest3", "PlayerRepositoryPassword3");
+        Player playerToUpdate = createTestPlayer(PLAYER_NAME.concat("3"));
         makeSurePlayerDoesExist(playerToUpdate);
 
-        String newPassword = "PlayerRepositoryPassword3a";
+        String newPassword = "newPassword567";
         playerToUpdate.setPassword(newPassword);
         playerRepository.save(playerToUpdate);
 
@@ -81,7 +82,7 @@ public class PlayerRepositoryTest {
 
     @Test
     public void shouldDeletePlayer() {
-        Player player = new Player("PlayerRepositoryTest4", "PlayerRepositoryPassword4");
+        Player player = createTestPlayer(PLAYER_NAME.concat("4"));
         makeSurePlayerDoesExist(player);
 
         playerRepository.delete(player);
