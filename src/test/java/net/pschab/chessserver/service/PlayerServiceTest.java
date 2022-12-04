@@ -1,12 +1,14 @@
 package net.pschab.chessserver.service;
 
 import net.pschab.chessserver.entity.Player;
+import net.pschab.chessserver.entity.Role;
 import net.pschab.chessserver.repository.PlayerRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.dao.DuplicateKeyException;
 
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -32,6 +34,8 @@ public class PlayerServiceTest {
                 .thenReturn(Optional.of(createTestPlayer(PLAYER_NAME.concat("5"))));
         when(playerRepository.findById(PLAYER_NAME.concat("6")))
                 .thenReturn(Optional.of(createTestPlayer(PLAYER_NAME.concat("6"))));
+        when(playerRepository.findById(PLAYER_NAME.concat("8")))
+                .thenReturn(Optional.empty());
         when(playerRepository.save(createTestPlayer(PLAYER_NAME.concat("4"))))
                 .thenReturn(createTestPlayer(PLAYER_NAME.concat("4")));
     }
@@ -54,10 +58,30 @@ public class PlayerServiceTest {
     }
 
     @Test
-    public void shouldGetPlayerById() {
-        Player playerFound = playerService.getPlayerById(PLAYER_NAME.concat("5"));
+    public void shouldThrowExceptionDueToPlayerWithGivenIdAlreadyExistsInDatabase() {
+        assertThatThrownBy(()-> playerService.addNewPlayer(createTestPlayer(PLAYER_NAME.concat("5"))))
+                .isInstanceOf(DuplicateKeyException.class)
+                .hasMessage(String .format("Player with name %s already exists.", PLAYER_NAME.concat("5")));
+    }
 
-        assertThat(playerFound).isEqualTo(createTestPlayer(PLAYER_NAME.concat("5")));
+    @Test
+    public void shouldExecutePasswordChangeOperation() {
+        assertThat(playerService.changePassword(createTestPlayer(PLAYER_NAME.concat("6")))).isEqualTo(true);
+    }
+    @Test
+    public void shouldThrowExceptionOnPasswordChangeDueToNoPlayerExists() {
+        assertThat(playerService.changePassword(createTestPlayer(PLAYER_NAME.concat("8")))).isEqualTo(false);
+    }
+
+    @Test
+    public void shouldGetPlayerById() {
+        Optional<Player> playerOptional = playerService.getPlayerById(PLAYER_NAME.concat("5"));
+
+        Player player = playerOptional.orElse(null);
+        assertThat(player).isNotNull();
+        assertThat(player.getName()).isEqualTo(PLAYER_NAME.concat("5"));
+        assertThat(player.getPassword()).isEqualTo(PLAYER_PASSWORD);
+        assertThat(player.getRole()).isEqualTo(Role.USER);
     }
 
     @Test

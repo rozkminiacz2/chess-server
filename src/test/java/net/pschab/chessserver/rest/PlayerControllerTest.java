@@ -1,6 +1,7 @@
 package net.pschab.chessserver.rest;
 
 import net.pschab.chessserver.entity.Player;
+import net.pschab.chessserver.entity.Role;
 import net.pschab.chessserver.service.PlayerService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -31,7 +32,9 @@ public class PlayerControllerTest {
     @BeforeEach
     public void initialize() {
         when(playerService.getAllPlayers()).thenReturn(getThreePlayerList());
+        when(playerService.getPlayerById(PLAYER_NAME.concat("6"))).thenReturn(Optional.of(createTestPlayer(PLAYER_NAME.concat("6"))));
         when(playerService.addNewPlayer(createTestPlayer(PLAYER_NAME.concat("4")))).thenReturn(true);
+        when(playerService.changePassword(createTestPlayer(PLAYER_NAME.concat("6")))).thenReturn(true);
         when(playerService.deletePlayer(PLAYER_NAME.concat("5"))).thenReturn(true);
     }
 
@@ -47,6 +50,20 @@ public class PlayerControllerTest {
     }
 
     @Test()
+    public void getOnePlayer() {
+        Map<String, String> params = new HashMap<>();
+        params.put("name", PLAYER_NAME.concat("6"));
+
+        ResponseEntity<Player> response = template.getForEntity("/tttserver/players/getById?name={name}", Player.class, params);
+
+        Player player = response.getBody();
+        assertThat(player).isNotNull();
+        assertThat(player.getName()).isEqualTo(PLAYER_NAME.concat("6"));
+        assertThat(player.getPassword()).isEqualTo(PLAYER_PASSWORD);
+        assertThat(player.getRole()).isEqualTo(Role.USER);
+    }
+
+    @Test()
     public void addPlayer() {
         Player playerToAdd = createTestPlayer(PLAYER_NAME.concat("4"));
 
@@ -58,10 +75,19 @@ public class PlayerControllerTest {
     }
 
     @Test()
+    public void changePassword() {
+        Player playerToHavePasswordChanged = createTestPlayer(PLAYER_NAME.concat("6"));
+
+        ResponseEntity<Boolean> response = template.postForEntity("/tttserver/players/changePassword", playerToHavePasswordChanged, Boolean.class);
+
+        assertThat(response.getBody()).isNotNull().isTrue();
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+    }
+
+    @Test()
     public void deletePlayer() {
-        Player playerToDelete = createTestPlayer(PLAYER_NAME.concat("5"));
         Map<String, String> params = new HashMap<>();
-        params.put("name", playerToDelete.getName());
+        params.put("name", PLAYER_NAME.concat("5"));
 
         ResponseEntity<Boolean> response = template.getForEntity("/tttserver/players/delete?name={name}", Boolean.class, params);
 

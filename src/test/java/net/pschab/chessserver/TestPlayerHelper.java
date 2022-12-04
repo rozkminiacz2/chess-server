@@ -1,7 +1,6 @@
 package net.pschab.chessserver;
 
 import net.pschab.chessserver.entity.Player;
-import net.pschab.chessserver.entity.Role;
 
 import java.util.ArrayList;
 import java.util.List;
