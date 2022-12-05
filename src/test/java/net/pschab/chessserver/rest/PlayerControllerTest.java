@@ -41,7 +41,7 @@ public class PlayerControllerTest {
 
     @Test()
     public void getAllPlayers() {
-        ResponseEntity<Player[]> response = template.getForEntity("/tttserver/players/getAll", Player[].class);
+        ResponseEntity<Player[]> response = template.getForEntity("/tttserver/players/get-all", Player[].class);
 
         List<Player> playerList = Arrays.asList(Objects.requireNonNull(response.getBody()));
         assertThat(playerList).isNotNull().isNotEmpty().hasSize(3);
@@ -55,7 +55,7 @@ public class PlayerControllerTest {
         Map<String, String> params = new HashMap<>();
         params.put("name", PLAYER_NAME.concat("6"));
 
-        ResponseEntity<Player> response = template.getForEntity("/tttserver/players/getById?name={name}", Player.class, params);
+        ResponseEntity<Player> response = template.getForEntity("/tttserver/players/get-by-id?name={name}", Player.class, params);
 
         Player player = response.getBody();
         assertThat(player).isNotNull();
@@ -79,7 +79,7 @@ public class PlayerControllerTest {
     public void changePassword() {
         Player playerToHavePasswordChanged = createTestPlayer(PLAYER_NAME.concat("6"));
 
-        ResponseEntity<Boolean> response = template.postForEntity("/tttserver/players/changePassword", playerToHavePasswordChanged, Boolean.class);
+        ResponseEntity<Boolean> response = template.postForEntity("/tttserver/players/change-password", playerToHavePasswordChanged, Boolean.class);
 
         assertThat(response.getBody()).isNotNull().isTrue();
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
@@ -89,7 +89,7 @@ public class PlayerControllerTest {
     public void changeRole() {
         Player playerToHaveRoleChanged = createTestPlayer(PLAYER_NAME.concat("6"));
 
-        ResponseEntity<Boolean> response = template.postForEntity("/tttserver/players/changeRole", playerToHaveRoleChanged, Boolean.class);
+        ResponseEntity<Boolean> response = template.postForEntity("/tttserver/players/change-role", playerToHaveRoleChanged, Boolean.class);
 
         assertThat(response.getBody()).isNotNull().isTrue();
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);

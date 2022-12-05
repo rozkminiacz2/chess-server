@@ -18,14 +18,14 @@ public class PlayerController {
     //TODO add security
     //TODO establish maturity level 4
 
-    @GetMapping("/getAll")
+    @GetMapping("/get-all")
     public List<Player> getAllPlayers() {
         return playerService.getAllPlayers();
     }
 
     //TODO change to Optional return value
     //TODO adjust message status and response message
-    @GetMapping("/getById")
+    @GetMapping("/get-by-id")
     public Player getById(@PathParam("name") String name) {
         return playerService.getPlayerById(name).orElse(null);
     }
@@ -35,12 +35,12 @@ public class PlayerController {
         return playerService.addNewPlayer(player);
     }
 
-    @PostMapping("/changePassword")
+    @PostMapping("/change-password")
     public boolean changePassword(@RequestBody Player player) {
         return playerService.changePassword(player);
     }
 
-    @PostMapping("/changeRole")
+    @PostMapping("/change-role")
     public boolean changeRole(@RequestBody Player player) {
         return playerService.changeRole(player);
     }
