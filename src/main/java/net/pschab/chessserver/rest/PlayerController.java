@@ -40,6 +40,11 @@ public class PlayerController {
         return playerService.changePassword(player);
     }
 
+    @PostMapping("/changeRole")
+    public boolean changeRole(@RequestBody Player player) {
+        return playerService.changeRole(player);
+    }
+
     @GetMapping("/delete")
     public boolean deletePlayer(@PathParam("name") String name) {
         return playerService.deletePlayer(name);

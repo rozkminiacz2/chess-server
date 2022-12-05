@@ -54,7 +54,17 @@ public class PlayerService {
     public boolean changePassword(Player player) {
         Player playerToStore = getValidatedPlayer(player);
         if (playerRepository.findById(player.getName()).isPresent()) {
-            playerToStore.setPassword(encode(playerToStore.getPassword()));
+            playerToStore.setPassword(encode(player.getPassword()));
+            playerRepository.save(playerToStore);
+            return true;
+        }
+        return false;
+    }
+
+    public boolean changeRole(Player player) {
+        Player playerToStore = getValidatedPlayer(player);
+        if (playerRepository.findById(player.getName()).isPresent()) {
+            playerToStore.setRole(player.getRole());
             playerRepository.save(playerToStore);
             return true;
         }

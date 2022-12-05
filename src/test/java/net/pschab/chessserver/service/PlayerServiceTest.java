@@ -74,6 +74,16 @@ public class PlayerServiceTest {
     }
 
     @Test
+    public void shouldExecuteRoleChangeOperation() {
+        assertThat(playerService.changeRole(createTestPlayer(PLAYER_NAME.concat("6")))).isEqualTo(true);
+    }
+
+    @Test
+    public void shouldThrowExceptionOnRoleChangeDueToNoPlayerExists() {
+        assertThat(playerService.changeRole(createTestPlayer(PLAYER_NAME.concat("8")))).isEqualTo(false);
+    }
+
+    @Test
     public void shouldGetPlayerById() {
         Optional<Player> playerOptional = playerService.getPlayerById(PLAYER_NAME.concat("5"));
 

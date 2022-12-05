@@ -35,6 +35,7 @@ public class PlayerControllerTest {
         when(playerService.getPlayerById(PLAYER_NAME.concat("6"))).thenReturn(Optional.of(createTestPlayer(PLAYER_NAME.concat("6"))));
         when(playerService.addNewPlayer(createTestPlayer(PLAYER_NAME.concat("4")))).thenReturn(true);
         when(playerService.changePassword(createTestPlayer(PLAYER_NAME.concat("6")))).thenReturn(true);
+        when(playerService.changeRole(createTestPlayer(PLAYER_NAME.concat("6")))).thenReturn(true);
         when(playerService.deletePlayer(PLAYER_NAME.concat("5"))).thenReturn(true);
     }
 
@@ -79,6 +80,16 @@ public class PlayerControllerTest {
         Player playerToHavePasswordChanged = createTestPlayer(PLAYER_NAME.concat("6"));
 
         ResponseEntity<Boolean> response = template.postForEntity("/tttserver/players/changePassword", playerToHavePasswordChanged, Boolean.class);
+
+        assertThat(response.getBody()).isNotNull().isTrue();
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+    }
+
+    @Test()
+    public void changeRole() {
+        Player playerToHaveRoleChanged = createTestPlayer(PLAYER_NAME.concat("6"));
+
+        ResponseEntity<Boolean> response = template.postForEntity("/tttserver/players/changeRole", playerToHaveRoleChanged, Boolean.class);
 
         assertThat(response.getBody()).isNotNull().isTrue();
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
