@@ -41,13 +41,14 @@ public class PlayerControllerTest {
 
     @Test()
     public void getAllPlayers() {
-        ResponseEntity<Player[]> response = template.getForEntity("/tttserver/players/get-all", Player[].class);
+        ResponseEntity<Player[]> response = template.getForEntity("/player", Player[].class);
 
         List<Player> playerList = Arrays.asList(Objects.requireNonNull(response.getBody()));
         assertThat(playerList).isNotNull().isNotEmpty().hasSize(3);
         assertThat(playerList).contains(createTestPlayer(PLAYER_NAME.concat("1")));
         assertThat(playerList).contains(createTestPlayer(PLAYER_NAME.concat("2")));
         assertThat(playerList).contains(createTestPlayer(PLAYER_NAME.concat("3")));
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
     }
 
     @Test()
@@ -55,33 +56,33 @@ public class PlayerControllerTest {
         Map<String, String> params = new HashMap<>();
         params.put("name", PLAYER_NAME.concat("6"));
 
-        ResponseEntity<Player> response = template.getForEntity("/tttserver/players/get-by-id?name={name}", Player.class, params);
+        ResponseEntity<Player> response = template.getForEntity("/player/get-by-id?name={name}", Player.class, params);
 
         Player player = response.getBody();
         assertThat(player).isNotNull();
         assertThat(player.getName()).isEqualTo(PLAYER_NAME.concat("6"));
         assertThat(player.getPassword()).isEqualTo(PLAYER_PASSWORD);
         assertThat(player.getRole()).isEqualTo(Role.USER);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
     }
 
     @Test()
     public void addPlayer() {
         Player playerToAdd = createTestPlayer(PLAYER_NAME.concat("4"));
 
-        ResponseEntity<Boolean> response = template.postForEntity("/tttserver/players/add", playerToAdd, Boolean.class);
+        ResponseEntity<Boolean> response = template.postForEntity("/player/add", playerToAdd, Boolean.class);
 
         assertThat(response.getBody()).isNotNull();
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-        assertThat(response.getBody()).isNotNull().isTrue();
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CREATED);
     }
 
     @Test()
     public void changePassword() {
         Player playerToHavePasswordChanged = createTestPlayer(PLAYER_NAME.concat("6"));
 
-        ResponseEntity<Boolean> response = template.postForEntity("/tttserver/players/change-password", playerToHavePasswordChanged, Boolean.class);
+        ResponseEntity<Boolean> response = template.postForEntity("/player/change-password", playerToHavePasswordChanged, Boolean.class);
 
-        assertThat(response.getBody()).isNotNull().isTrue();
+        assertThat(response.getBody()).isNotNull();
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
     }
 
@@ -89,7 +90,7 @@ public class PlayerControllerTest {
     public void changeRole() {
         Player playerToHaveRoleChanged = createTestPlayer(PLAYER_NAME.concat("6"));
 
-        ResponseEntity<Boolean> response = template.postForEntity("/tttserver/players/change-role", playerToHaveRoleChanged, Boolean.class);
+        ResponseEntity<Boolean> response = template.postForEntity("/player/change-role", playerToHaveRoleChanged, Boolean.class);
 
         assertThat(response.getBody()).isNotNull().isTrue();
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
@@ -100,10 +101,9 @@ public class PlayerControllerTest {
         Map<String, String> params = new HashMap<>();
         params.put("name", PLAYER_NAME.concat("5"));
 
-        ResponseEntity<Boolean> response = template.getForEntity("/tttserver/players/delete?name={name}", Boolean.class, params);
+        ResponseEntity<Boolean> response = template.getForEntity("/player/delete?name={name}", Boolean.class, params);
 
-        Boolean booleanResponse = response.getBody();
-        assertThat(booleanResponse).isNotNull().isTrue();
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
     }
 
 }
