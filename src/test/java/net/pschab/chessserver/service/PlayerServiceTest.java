@@ -66,21 +66,21 @@ public class PlayerServiceTest {
 
     @Test
     public void shouldExecutePasswordChangeOperation() {
-        assertThat(playerService.changePassword(createTestPlayer(PLAYER_NAME.concat("6")))).isEqualTo(true);
+        assertThat(playerService.updatePlayer(createTestPlayer(PLAYER_NAME.concat("6")))).isEqualTo(true);
     }
     @Test
     public void shouldThrowExceptionOnPasswordChangeDueToNoPlayerExists() {
-        assertThat(playerService.changePassword(createTestPlayer(PLAYER_NAME.concat("8")))).isEqualTo(false);
+        assertThat(playerService.updatePlayer(createTestPlayer(PLAYER_NAME.concat("8")))).isEqualTo(false);
     }
 
     @Test
     public void shouldExecuteRoleChangeOperation() {
-        assertThat(playerService.changeRole(createTestPlayer(PLAYER_NAME.concat("6")))).isEqualTo(true);
+        assertThat(playerService.updatePlayer(createTestPlayer(PLAYER_NAME.concat("6")))).isEqualTo(true);
     }
 
     @Test
-    public void shouldThrowExceptionOnRoleChangeDueToNoPlayerExists() {
-        assertThat(playerService.changeRole(createTestPlayer(PLAYER_NAME.concat("8")))).isEqualTo(false);
+    public void shouldNotUpdatePlayerDueToNoPlayerExists() {
+        assertThat(playerService.updatePlayer(createTestPlayer(PLAYER_NAME.concat("8")))).isEqualTo(false);
     }
 
     @Test
@@ -110,16 +110,16 @@ public class PlayerServiceTest {
 
     @Test
     public void shouldThrowExceptionDueToNullPasswordOnAddingNewPlayer() {
-        assertThatThrownBy(()-> playerService.addNewPlayer(createTestPlayer(PLAYER_NAME.concat("7"), null)))
+        assertThatThrownBy(()-> playerService.addNewPlayer(createTestPlayerWithNullPassword(PLAYER_NAME.concat("7"))))
                 .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("Password cannot be empty.");
+                .hasMessage("Player password cannot be empty.");
     }
 
     @Test
     public void shouldThrowExceptionDueToEmptyPasswordOnAddingNewPlayer() {
         assertThatThrownBy(()-> playerService.addNewPlayer(createTestPlayer(PLAYER_NAME.concat("7"), "")))
                 .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("Password cannot be empty.");
+                .hasMessage("Player password cannot be empty.");
     }
 
     @Test

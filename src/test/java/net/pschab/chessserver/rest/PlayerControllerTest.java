@@ -10,6 +10,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.web.client.TestRestTemplate;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
@@ -17,6 +19,7 @@ import java.util.*;
 
 import static net.pschab.chessserver.TestPlayerHelper.*;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -33,14 +36,14 @@ public class PlayerControllerTest {
     public void initialize() {
         when(playerService.getAllPlayers()).thenReturn(getThreePlayerList());
         when(playerService.getPlayerById(PLAYER_NAME.concat("6"))).thenReturn(Optional.of(createTestPlayer(PLAYER_NAME.concat("6"))));
+        when(playerService.getPlayerById(PLAYER_NAME.concat("4"))).thenReturn(Optional.empty());
         when(playerService.addNewPlayer(createTestPlayer(PLAYER_NAME.concat("4")))).thenReturn(true);
-        when(playerService.changePassword(createTestPlayer(PLAYER_NAME.concat("6")))).thenReturn(true);
-        when(playerService.changeRole(createTestPlayer(PLAYER_NAME.concat("6")))).thenReturn(true);
+        when(playerService.updatePlayer(any(Player.class))).thenReturn(true);
         when(playerService.deletePlayer(PLAYER_NAME.concat("5"))).thenReturn(true);
     }
 
     @Test()
-    public void getAllPlayers() {
+    public void shouldRetrieveAssumedAllPlayersInDatabase() {
         ResponseEntity<Player[]> response = template.getForEntity("/player", Player[].class);
 
         List<Player> playerList = Arrays.asList(Objects.requireNonNull(response.getBody()));
@@ -52,11 +55,11 @@ public class PlayerControllerTest {
     }
 
     @Test()
-    public void getOnePlayer() {
+    public void shouldRetrieveOneSpecifiedPlayer() {
         Map<String, String> params = new HashMap<>();
         params.put("name", PLAYER_NAME.concat("6"));
 
-        ResponseEntity<Player> response = template.getForEntity("/player/get-by-id?name={name}", Player.class, params);
+        ResponseEntity<Player> response = template.getForEntity("/player/{name}", Player.class, params);
 
         Player player = response.getBody();
         assertThat(player).isNotNull();
@@ -67,43 +70,44 @@ public class PlayerControllerTest {
     }
 
     @Test()
-    public void addPlayer() {
+    public void shouldAddPlayerToTheDatabase() {
         Player playerToAdd = createTestPlayer(PLAYER_NAME.concat("4"));
 
-        ResponseEntity<Boolean> response = template.postForEntity("/player/add", playerToAdd, Boolean.class);
+        ResponseEntity<Boolean> response = template.postForEntity("/player", playerToAdd, Boolean.class);
 
         assertThat(response.getBody()).isNotNull();
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CREATED);
     }
 
     @Test()
-    public void changePassword() {
-        Player playerToHavePasswordChanged = createTestPlayer(PLAYER_NAME.concat("6"));
+    public void shouldChangePasswordOfPlayer() {
+        Map<String, String> params = new HashMap<>();
+        params.put("name", PLAYER_NAME.concat("6"));
+        Player playerToHavePasswordChanged = createTestPlayer(PLAYER_NAME.concat("6"), "newPassword123");
 
-        ResponseEntity<Boolean> response = template.postForEntity("/player/change-password", playerToHavePasswordChanged, Boolean.class);
+        ResponseEntity<Boolean> response = template.exchange("/player/{name}", HttpMethod.PUT, new HttpEntity<>(playerToHavePasswordChanged), Boolean.class, params);
 
-        assertThat(response.getBody()).isNotNull();
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
     }
 
     @Test()
-    public void changeRole() {
-        Player playerToHaveRoleChanged = createTestPlayer(PLAYER_NAME.concat("6"));
+    public void shouldChangeRoleOfPlayer() {
+        Map<String, String> params = new HashMap<>();
+        params.put("name", PLAYER_NAME.concat("6"));
+        Player playerToHaveRoleChanged = createTestPlayer(PLAYER_NAME.concat("6"), Role.ADMIN);
 
-        ResponseEntity<Boolean> response = template.postForEntity("/player/change-role", playerToHaveRoleChanged, Boolean.class);
+        ResponseEntity<Boolean> response = template.exchange("/player/{name}", HttpMethod.PUT, new HttpEntity<>(playerToHaveRoleChanged), Boolean.class, params);
 
-        assertThat(response.getBody()).isNotNull().isTrue();
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
     }
 
     @Test()
-    public void deletePlayer() {
+    public void shouldDeletePlayerByName() {
         Map<String, String> params = new HashMap<>();
         params.put("name", PLAYER_NAME.concat("5"));
 
-        ResponseEntity<Boolean> response = template.getForEntity("/player/delete?name={name}", Boolean.class, params);
+        ResponseEntity<Boolean> response = template.exchange("/player/{name}", HttpMethod.DELETE, new HttpEntity<>(null), Boolean.class, params);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
     }
-
 }

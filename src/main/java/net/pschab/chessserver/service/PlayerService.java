@@ -2,6 +2,7 @@ package net.pschab.chessserver.service;
 
 import net.pschab.chessserver.entity.Player;
 import net.pschab.chessserver.repository.PlayerRepository;
+import net.pschab.chessserver.util.PlayerValidator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
@@ -20,24 +21,21 @@ public class PlayerService {
     @Autowired
     private PlayerRepository playerRepository;
 
+    @Autowired
+    private PlayerValidator playerValidator;
+
     public List<Player> getAllPlayers() {
         return StreamSupport.stream(playerRepository.findAll().spliterator(), false)
                 .collect(Collectors.toList());
     }
 
     public Optional<Player> getPlayerById(String name) {
-        validatePlayerName(name);
+        playerValidator.validatePlayerName(name);
         try {
             return playerRepository.findById(name);
         }
         catch (IllegalArgumentException e) {
             return Optional.empty();
-        }
-    }
-
-    private void validatePlayerName(String name) {
-        if (name == null || name.isBlank()) {
-            throw new IllegalArgumentException("Player name cannot be empty.");
         }
     }
 
@@ -51,19 +49,10 @@ public class PlayerService {
         return true;
     }
 
-    public boolean changePassword(Player player) {
+    public boolean updatePlayer(Player player) {
         Player playerToStore = getValidatedPlayer(player);
         if (playerRepository.findById(player.getName()).isPresent()) {
             playerToStore.setPassword(encode(player.getPassword()));
-            playerRepository.save(playerToStore);
-            return true;
-        }
-        return false;
-    }
-
-    public boolean changeRole(Player player) {
-        Player playerToStore = getValidatedPlayer(player);
-        if (playerRepository.findById(player.getName()).isPresent()) {
             playerToStore.setRole(player.getRole());
             playerRepository.save(playerToStore);
             return true;
@@ -72,15 +61,9 @@ public class PlayerService {
     }
 
     private Player getValidatedPlayer(Player player) {
-        validatePlayerName(player.getName());
-        validatePlayerPassword(player.getPassword());
+        playerValidator.validatePlayerName(player.getName());
+        playerValidator.validatePlayerPassword(player.getPassword());
         return new Player(player.getName(), player.getPassword(), player.getRole());
-    }
-
-    private void validatePlayerPassword(String password) {
-        if (password == null || password.isBlank()) {
-            throw new IllegalArgumentException("Password cannot be empty.");
-        }
     }
 
     public boolean deletePlayer(String name) {

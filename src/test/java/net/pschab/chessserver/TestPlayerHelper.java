@@ -1,6 +1,7 @@
 package net.pschab.chessserver;
 
 import net.pschab.chessserver.entity.Player;
+import net.pschab.chessserver.entity.Role;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -24,5 +25,13 @@ public class TestPlayerHelper {
 
     public static Player createTestPlayer(String name, String password) {
         return new Player(name, password);
+    }
+
+    public static Player createTestPlayerWithNullPassword(String name) {
+        return new Player(name, null);
+    }
+
+    public static Player createTestPlayer(String name, Role role) {
+        return new Player(name, PLAYER_PASSWORD, role);
     }
 }
