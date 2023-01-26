@@ -1,6 +1,5 @@
 package net.pschab.chessserver.rest;
 
-import net.pschab.chessserver.service.ApiError;
 import org.junit.jupiter.api.Test;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.http.HttpStatus;
@@ -24,7 +23,7 @@ public class RestExceptionHandlerTest {
         ApiError apiError = (ApiError) responseEntity.getBody();
 
         assertThat(apiError).isNotNull();
-        assertThat(apiError.getMessage()).isEqualTo("Duplicate key");
+        assertThat(apiError.getMessage()).isEqualTo("Duplicate key.");
         assertThat(apiError.getStatus()).isEqualTo(HttpStatus.BAD_REQUEST);
         assertThat(apiError.getDebugMessage()).isEqualTo(errorMessage);
     }
@@ -39,14 +38,14 @@ public class RestExceptionHandlerTest {
         ApiError apiError = (ApiError) responseEntity.getBody();
 
         assertThat(apiError).isNotNull();
-        assertThat(apiError.getMessage()).isEqualTo("Invalid data");
+        assertThat(apiError.getMessage()).isEqualTo("Invalid data.");
         assertThat(apiError.getStatus()).isEqualTo(HttpStatus.BAD_REQUEST);
         assertThat(apiError.getDebugMessage()).isEqualTo(errorMessage);
     }
 
     @Test
     void shouldValidateNoSuchElementExceptionApiError() {
-        String errorMessage = "No player with name: Player1";
+        String errorMessage = "No player with name: PlayerRestTester2";
         final ResponseEntity<Object> responseEntity =
                 handler.handleNoSuchElementException(new NoSuchElementException(errorMessage));
 
@@ -54,7 +53,7 @@ public class RestExceptionHandlerTest {
         ApiError apiError = (ApiError) responseEntity.getBody();
 
         assertThat(apiError).isNotNull();
-        assertThat(apiError.getMessage()).isEqualTo("No such element found in the database.");
+        assertThat(apiError.getMessage()).isEqualTo("The item does not exist.");
         assertThat(apiError.getStatus()).isEqualTo(HttpStatus.NOT_FOUND);
         assertThat(apiError.getDebugMessage()).isEqualTo(errorMessage);
     }

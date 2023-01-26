@@ -1,6 +1,5 @@
 package net.pschab.chessserver.rest;
 
-import net.pschab.chessserver.service.ApiError;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.dao.DuplicateKeyException;
@@ -21,7 +20,7 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
 
     @Override
     public ResponseEntity<Object> handleHttpMessageNotReadable(HttpMessageNotReadableException ex, HttpHeaders headers, HttpStatus status, WebRequest request) {
-        String error = "Malformed JSON request";
+        String error = "Malformed JSON request.";
         ApiError apiError = new ApiError(HttpStatus.BAD_REQUEST);
         apiError.setMessage(error);
         apiError.setDebugMessage(ex.getMessage());
@@ -31,7 +30,7 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<Object> handleIllegalArgumentException(IllegalArgumentException ex) {
         ApiError apiError = new ApiError(HttpStatus.BAD_REQUEST);
-        apiError.setMessage("Invalid data");
+        apiError.setMessage("Invalid data.");
         apiError.setDebugMessage(ex.getMessage());
         return buildResponseEntity(apiError);
     }
@@ -39,7 +38,7 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
     @ExceptionHandler(DuplicateKeyException.class)
     public ResponseEntity<Object> handleDuplicateKeyException(DuplicateKeyException ex) {
         ApiError apiError = new ApiError(HttpStatus.BAD_REQUEST);
-        apiError.setMessage("Duplicate key");
+        apiError.setMessage("Duplicate key.");
         apiError.setDebugMessage(ex.getMessage());
         return buildResponseEntity(apiError);
     }
@@ -48,7 +47,7 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
     @ExceptionHandler(NoSuchElementException.class)
     public ResponseEntity<Object> handleNoSuchElementException(NoSuchElementException ex) {
         ApiError apiError = new ApiError(HttpStatus.NOT_FOUND);
-        apiError.setMessage("No such element found in the database.");
+        apiError.setMessage("The item does not exist.");
         apiError.setDebugMessage(ex.getMessage());
         return buildResponseEntity(apiError);
     }

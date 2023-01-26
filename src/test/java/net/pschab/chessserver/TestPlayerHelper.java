@@ -4,7 +4,10 @@ import net.pschab.chessserver.entity.Player;
 import net.pschab.chessserver.entity.Role;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+
+import static net.pschab.chessserver.util.HashEncoder.encode;
 
 public class TestPlayerHelper {
 
@@ -34,4 +37,9 @@ public class TestPlayerHelper {
     public static Player createTestPlayer(String name, Role role) {
         return new Player(name, PLAYER_PASSWORD, role);
     }
+
+    public static Player createDbPlayer(String name) {
+        return new Player(name, encode(PLAYER_PASSWORD));
+    }
+
 }

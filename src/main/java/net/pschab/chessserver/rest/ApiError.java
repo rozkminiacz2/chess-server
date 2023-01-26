@@ -1,35 +1,28 @@
-package net.pschab.chessserver.service;
+package net.pschab.chessserver.rest;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 import org.springframework.http.HttpStatus;
 @Data
-public class ApiError {
+public class ApiError extends ApiResponse {
 
-    private HttpStatus status;
-
-    private String message;
     private String debugMessage;
 
     private ApiError() {
+        super();
     }
 
     public ApiError(HttpStatus status) {
-        this();
-        this.status = status;
+        super(status);
     }
 
     ApiError(HttpStatus status, Throwable ex) {
-        this();
-        this.status = status;
+        super(status);
         this.message = "Unexpected error";
         this.debugMessage = ex.getLocalizedMessage();
     }
 
     ApiError(HttpStatus status, String message, Throwable ex) {
-        this();
-        this.status = status;
-        this.message = message;
+        super(status, message);
         this.debugMessage = ex.getLocalizedMessage();
     }
 }
