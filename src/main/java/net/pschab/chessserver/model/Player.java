@@ -1,11 +1,9 @@
-package net.pschab.chessserver.entity;
+package net.pschab.chessserver.model;
 
-import com.sun.istack.NotNull;
+import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
 
-import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
-import javax.persistence.Id;
+import java.util.List;
 import java.util.Objects;
 
 @Entity
@@ -20,12 +18,23 @@ public class Player {
     @Enumerated(EnumType.STRING)
     private Role role;
 
-    public Player() {}
+    @OneToMany(mappedBy = "host")
+    private List<Game> hostedGames;
+
+    @OneToMany(mappedBy = "guest")
+    private List<Game> guestedGames;
+
+    public Player() {
+    }
+
+    public Player(String name) {
+        this.name = name;
+        this.role = Role.USER;
+    }
 
     public Player(String name, String password) {
-        this.name = name;
+        this(name);
         this.password = password;
-        this.role = Role.USER;
     }
 
     public Player(String name, String password, Role role) {
@@ -41,7 +50,7 @@ public class Player {
     public void setName(String name) {
         this.name = name;
     }
-
+    
     public String getPassword() {
         return password;
     }

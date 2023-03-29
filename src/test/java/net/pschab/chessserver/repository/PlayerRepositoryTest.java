@@ -1,6 +1,6 @@
 package net.pschab.chessserver.repository;
 
-import net.pschab.chessserver.entity.Player;
+import net.pschab.chessserver.model.Player;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
@@ -10,7 +10,8 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 import java.util.NoSuchElementException;
 import java.util.stream.StreamSupport;
 
-import static net.pschab.chessserver.TestPlayerHelper.*;
+import static net.pschab.chessserver.TestPlayerHelper.PLAYER_NAME;
+import static net.pschab.chessserver.TestPlayerHelper.createTestPlayer;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @DataJpaTest
@@ -20,7 +21,7 @@ public class PlayerRepositoryTest {
     @Autowired
     private TestEntityManager entityManager;
     @Autowired
-    PlayerRepository playerRepository;
+    private PlayerRepository playerRepository;
 
     @Test
     public void shouldSaveNewPlayer() {
@@ -33,18 +34,7 @@ public class PlayerRepositoryTest {
         Player playerFound = entityManager.find(Player.class, playerToStore.getName());
 
         assertThat(playerFound).isEqualTo(playerToStore);
-        assertThat(finalSize-initialSize).isEqualTo(1);
-    }
-
-    private void makeSurePlayerDoesNotExist(String name) {
-        Player playerToDelete = entityManager.find(Player.class, name);
-        if (playerToDelete != null) {
-            entityManager.remove(playerToDelete);
-        }
-    }
-
-    private long getPlayerCount() {
-        return StreamSupport.stream(playerRepository.findAll().spliterator(), false).count();
+        assertThat(finalSize - initialSize).isEqualTo(1);
     }
 
     @Test
@@ -55,13 +45,6 @@ public class PlayerRepositoryTest {
         Player playerFound = playerRepository.findById(playerToGet.getName()).orElse(null);
 
         assertThat(playerFound).isEqualTo(playerToGet);
-    }
-
-    private void makeSurePlayerDoesExist(Player playerToCheck) {
-        Player playerFromDatabase = entityManager.find(Player.class, playerToCheck.getName());
-        if (playerFromDatabase == null) {
-            entityManager.persist(playerToCheck);
-        }
     }
 
     @Test
@@ -88,5 +71,23 @@ public class PlayerRepositoryTest {
         playerRepository.delete(player);
 
         assertThat(playerRepository.findById(player.getName())).isEmpty();
+    }
+
+    private void makeSurePlayerDoesNotExist(String name) {
+        Player playerToDelete = entityManager.find(Player.class, name);
+        if (playerToDelete != null) {
+            entityManager.remove(playerToDelete);
+        }
+    }
+
+    private long getPlayerCount() {
+        return StreamSupport.stream(playerRepository.findAll().spliterator(), false).count();
+    }
+
+    private void makeSurePlayerDoesExist(Player playerToCheck) {
+        Player playerFromDatabase = entityManager.find(Player.class, playerToCheck.getName());
+        if (playerFromDatabase == null) {
+            entityManager.persist(playerToCheck);
+        }
     }
 }

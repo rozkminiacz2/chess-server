@@ -1,4 +1,4 @@
-package net.pschab.chessserver.entity;
+package net.pschab.chessserver.model;
 
 public enum Status {
     INITIATED,

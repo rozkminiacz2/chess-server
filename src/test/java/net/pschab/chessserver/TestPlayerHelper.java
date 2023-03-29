@@ -1,10 +1,9 @@
 package net.pschab.chessserver;
 
-import net.pschab.chessserver.entity.Player;
-import net.pschab.chessserver.entity.Role;
+import net.pschab.chessserver.model.Player;
+import net.pschab.chessserver.model.Role;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import static net.pschab.chessserver.util.HashEncoder.encode;
@@ -41,5 +40,4 @@ public class TestPlayerHelper {
     public static Player createDbPlayer(String name) {
         return new Player(name, encode(PLAYER_PASSWORD));
     }
-
 }

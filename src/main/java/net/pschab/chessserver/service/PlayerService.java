@@ -1,6 +1,6 @@
 package net.pschab.chessserver.service;
 
-import net.pschab.chessserver.entity.Player;
+import net.pschab.chessserver.model.Player;
 import net.pschab.chessserver.repository.PlayerRepository;
 import net.pschab.chessserver.util.PlayerValidator;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,41 +29,38 @@ public class PlayerService {
                 .collect(Collectors.toList());
     }
 
-    public Optional<Player> getPlayerById(String name) {
+    public Optional<Player> getPlayerByName(String name) {
         playerValidator.validatePlayerName(name);
         try {
             return playerRepository.findById(name);
-        }
-        catch (IllegalArgumentException e) {
+        } catch (IllegalArgumentException e) {
             return Optional.empty();
         }
     }
 
     public boolean addNewPlayer(Player player) {
-        Player playerToStore = getValidatedPlayer(player);
+        validatePlayer(player);
         if (playerRepository.findById(player.getName()).isPresent()) {
             throw new DuplicateKeyException(String.format("Player with name %s already exists.", player.getName()));
         }
-        playerToStore.setPassword(encode(playerToStore.getPassword()));
-        playerRepository.save(playerToStore);
+        player.setPassword(encode(player.getPassword()));
+        playerRepository.save(player);
         return true;
     }
 
     public boolean updatePlayer(Player player) {
-        Player playerToStore = getValidatedPlayer(player);
+        validatePlayer(player);
         if (playerRepository.findById(player.getName()).isPresent()) {
-            playerToStore.setPassword(encode(player.getPassword()));
-            playerToStore.setRole(player.getRole());
-            playerRepository.save(playerToStore);
+            player.setPassword(encode(player.getPassword()));
+            playerRepository.save(player);
             return true;
         }
         return false;
     }
 
-    private Player getValidatedPlayer(Player player) {
+    private void validatePlayer(Player player) {
         playerValidator.validatePlayerName(player.getName());
         playerValidator.validatePlayerPassword(player.getPassword());
-        return new Player(player.getName(), player.getPassword(), player.getRole());
     }
 
     public boolean deletePlayer(String name) {

@@ -1,9 +1,7 @@
 package net.pschab.chessserver.service;
 
-import net.pschab.chessserver.entity.Player;
-import net.pschab.chessserver.entity.Role;
+import net.pschab.chessserver.model.Player;
 import net.pschab.chessserver.repository.PlayerRepository;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -22,26 +20,17 @@ import static org.mockito.Mockito.when;
 @SpringBootTest
 public class PlayerServiceTest {
 
+    private final String playerName = PLAYER_NAME.concat("1");
+
     @MockBean
     PlayerRepository playerRepository;
     @Autowired
     PlayerService playerService;
 
-    @BeforeEach
-    public void initialize() {
-        when(playerRepository.findAll()).thenReturn(getThreePlayerList());
-        when(playerRepository.findById(PLAYER_NAME.concat("5")))
-                .thenReturn(Optional.of(createTestPlayer(PLAYER_NAME.concat("5"))));
-        when(playerRepository.findById(PLAYER_NAME.concat("6")))
-                .thenReturn(Optional.of(createTestPlayer(PLAYER_NAME.concat("6"))));
-        when(playerRepository.findById(PLAYER_NAME.concat("8")))
-                .thenReturn(Optional.empty());
-        when(playerRepository.save(createTestPlayer(PLAYER_NAME.concat("4"))))
-                .thenReturn(createTestPlayer(PLAYER_NAME.concat("4")));
-    }
-
     @Test
     public void shouldGetAllPlayers() {
+        when(playerRepository.findAll()).thenReturn(getThreePlayerList());
+
         List<Player> playerList = playerService.getAllPlayers();
 
         assertThat(playerList).isNotNull().isNotEmpty().hasSize(3);
@@ -52,98 +41,101 @@ public class PlayerServiceTest {
 
     @Test
     public void shouldAddNewPlayerWithNoRoleSpecified() {
-        Boolean status = playerService.addNewPlayer(createTestPlayer(PLAYER_NAME.concat("4")));
+        Boolean status = playerService.addNewPlayer(createTestPlayer(playerName));
 
         assertThat(status).isTrue();
     }
 
     @Test
-    public void shouldThrowExceptionDueToPlayerWithGivenIdAlreadyExistsInDatabase() {
-        assertThatThrownBy(()-> playerService.addNewPlayer(createTestPlayer(PLAYER_NAME.concat("5"))))
+    public void shouldThrowExceptionDueToPlayerWithGivenNameAlreadyExistsInDatabase() {
+        when(playerRepository.findById(playerName))
+                .thenReturn(Optional.of(createTestPlayer(playerName)));
+
+        assertThatThrownBy(() -> playerService.addNewPlayer(createTestPlayer(playerName)))
                 .isInstanceOf(DuplicateKeyException.class)
-                .hasMessage(String .format("Player with name %s already exists.", PLAYER_NAME.concat("5")));
+                .hasMessage(String.format("Player with name %s already exists.", playerName));
     }
 
     @Test
-    public void shouldExecutePasswordChangeOperation() {
-        assertThat(playerService.updatePlayer(createTestPlayer(PLAYER_NAME.concat("6")))).isEqualTo(true);
-    }
-    @Test
-    public void shouldThrowExceptionOnPasswordChangeDueToNoPlayerExists() {
-        assertThat(playerService.updatePlayer(createTestPlayer(PLAYER_NAME.concat("8")))).isEqualTo(false);
+    public void shouldExecutePlayerUpdateOperation() {
+        when(playerRepository.findById(playerName))
+                .thenReturn(Optional.of(createTestPlayer(playerName)));
+
+        assertThat(playerService.updatePlayer(createTestPlayer(playerName))).isEqualTo(true);
     }
 
     @Test
-    public void shouldExecuteRoleChangeOperation() {
-        assertThat(playerService.updatePlayer(createTestPlayer(PLAYER_NAME.concat("6")))).isEqualTo(true);
-    }
+    public void shouldThrowExceptionOnPlayerUpdateDueToNoPlayerExists() {
+        when(playerRepository.findById(playerName))
+                .thenReturn(Optional.empty());
 
-    @Test
-    public void shouldNotUpdatePlayerDueToNoPlayerExists() {
-        assertThat(playerService.updatePlayer(createTestPlayer(PLAYER_NAME.concat("8")))).isEqualTo(false);
+        assertThat(playerService.updatePlayer(createTestPlayer(playerName))).isEqualTo(false);
     }
 
     @Test
     public void shouldGetPlayerById() {
-        Optional<Player> playerOptional = playerService.getPlayerById(PLAYER_NAME.concat("5"));
+        when(playerRepository.findById(playerName))
+                .thenReturn(Optional.of(createTestPlayer(playerName)));
 
-        Player player = playerOptional.orElse(null);
-        assertThat(player).isNotNull();
-        assertThat(player.getName()).isEqualTo(PLAYER_NAME.concat("5"));
-        assertThat(player.getPassword()).isEqualTo(PLAYER_PASSWORD);
-        assertThat(player.getRole()).isEqualTo(Role.USER);
+        Optional<Player> playerOptional = playerService.getPlayerByName(playerName);
+
+        assertThat(playerOptional.orElse(null)).isEqualTo(createTestPlayer(playerName));
     }
 
     @Test
     public void shouldThrowExceptionDueToNullNameOnAddingNewPlayer() {
-        assertThatThrownBy(()-> playerService.addNewPlayer(createTestPlayer(null)))
+        assertThatThrownBy(() -> playerService.addNewPlayer(createTestPlayer(null)))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("Player name cannot be empty.");
     }
 
     @Test
     public void shouldThrowExceptionDueToEmptyNameOnAddingNewPlayer() {
-        assertThatThrownBy(()-> playerService.addNewPlayer(createTestPlayer("")))
+        assertThatThrownBy(() -> playerService.addNewPlayer(createTestPlayer("")))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("Player name cannot be empty.");
     }
 
     @Test
     public void shouldThrowExceptionDueToNullPasswordOnAddingNewPlayer() {
-        assertThatThrownBy(()-> playerService.addNewPlayer(createTestPlayerWithNullPassword(PLAYER_NAME.concat("7"))))
+        assertThatThrownBy(() -> playerService.addNewPlayer(createTestPlayerWithNullPassword(playerName)))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("Player password cannot be empty.");
     }
 
     @Test
     public void shouldThrowExceptionDueToEmptyPasswordOnAddingNewPlayer() {
-        assertThatThrownBy(()-> playerService.addNewPlayer(createTestPlayer(PLAYER_NAME.concat("7"), "")))
+        assertThatThrownBy(() -> playerService.addNewPlayer(createTestPlayer(playerName, "")))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("Player password cannot be empty.");
     }
 
     @Test
     public void shouldThrowExceptionDueToNullNameOnGettingPlayerById() {
-        assertThatThrownBy(()-> playerService.getPlayerById(null))
+        assertThatThrownBy(() -> playerService.getPlayerByName(null))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("Player name cannot be empty.");
     }
 
     @Test
     public void shouldThrowExceptionDueToEmptyNameOnGettingPlayerById() {
-        assertThatThrownBy(()-> playerService.getPlayerById(""))
+        assertThatThrownBy(() -> playerService.getPlayerByName(""))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("Player name cannot be empty.");
     }
+
     @Test
     public void shouldDeletePlayer() {
-        assertThat(playerService.deletePlayer(PLAYER_NAME.concat("6"))).isTrue();
+        when(playerRepository.findById(playerName))
+                .thenReturn(Optional.of(createTestPlayer(playerName)));
+
+        assertThat(playerService.deletePlayer(playerName)).isTrue();
     }
 
     @Test
-    public void shouldThrowExceptionDueToPlayerNotFoundOnPlayerDeletion() {
-        assertThatThrownBy(()-> playerService.deletePlayer(PLAYER_NAME.concat("7")))
+    public void shouldThrowExceptionDueToPlayerNotFoundOnDeletion() {
+        assertThatThrownBy(() -> playerService.deletePlayer(playerName))
                 .isInstanceOf(NoSuchElementException.class)
-                .hasMessage(String.format("Player with name %s does not exist in the database.", PLAYER_NAME.concat("7")));
+                .hasMessage(String.format("Player with name %s does not exist in the database.", playerName));
     }
 }

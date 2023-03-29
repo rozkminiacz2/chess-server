@@ -1,8 +1,12 @@
-package net.pschab.chessserver.rest;
+package net.pschab.chessserver.rest.controller;
 
-import net.pschab.chessserver.entity.Player;
+import net.pschab.chessserver.model.Player;
+import net.pschab.chessserver.rest.ApiResponse;
+import net.pschab.chessserver.rest.assembler.PlayerModelAssembler;
 import net.pschab.chessserver.service.PlayerService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.hateoas.CollectionModel;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -14,30 +18,32 @@ import java.util.Optional;
 import static net.pschab.chessserver.util.HashEncoder.matches;
 
 @RestController
-@RequestMapping("player")
+@RequestMapping("players")
 public class PlayerController {
 
     @Autowired
     PlayerService playerService;
 
+    @Autowired
+    PlayerModelAssembler playerModelAssembler;
+
     //TODO add security
-    //TODO establish maturity level 4
 
     @GetMapping()
-    public ResponseEntity<List<Player>> getAllPlayers() {
+    public ResponseEntity<CollectionModel<EntityModel<Player>>> getAllPlayers() {
         List<Player> players = playerService.getAllPlayers();
         if (players.isEmpty()) {
             throw new NoSuchElementException("There are no players in the database.");
         } else {
-            return new ResponseEntity<>(players, HttpStatus.OK);
+            return new ResponseEntity<>(playerModelAssembler.toCollectionModel(players), HttpStatus.OK);
         }
     }
 
     @GetMapping("/{name}")
-    public ResponseEntity<Player> getById(@PathVariable("name") String name) {
-        Optional<Player> playerOptional = playerService.getPlayerById(name);
+    public ResponseEntity<EntityModel<Player>> getByName(@PathVariable("name") String name) {
+        Optional<Player> playerOptional = playerService.getPlayerByName(name);
         if (playerOptional.isPresent()) {
-            return new ResponseEntity<>(playerOptional.get(), HttpStatus.OK);
+            return new ResponseEntity<>(playerModelAssembler.toModel(playerOptional.get()), HttpStatus.OK);
         } else {
             throw new NoSuchElementException(getNoSuchPlayerMessage(name));
         }
@@ -50,9 +56,14 @@ public class PlayerController {
     @PostMapping()
     public ResponseEntity<ApiResponse> addNewPlayer(@RequestBody Player player) {
         playerService.addNewPlayer(player);
-        ApiResponse apiResponse = new ApiResponse(HttpStatus.CREATED);
-        apiResponse.setMessage(String.format("Player with name: %s created.", player.getName()));
-        return new ResponseEntity<>(apiResponse,HttpStatus.CREATED);
+        ApiResponse apiResponse = createApiResponse(HttpStatus.CREATED, "Player with name: %s created.", player);
+        return new ResponseEntity<>(apiResponse, HttpStatus.CREATED);
+    }
+
+    private ApiResponse createApiResponse(HttpStatus ok, String format, Player player) {
+        ApiResponse apiResponse = new ApiResponse(ok);
+        apiResponse.setMessage(String.format(format, player.getName()));
+        return apiResponse;
     }
 
     @PutMapping("/{name}")
@@ -60,19 +71,25 @@ public class PlayerController {
         if (!name.equals(player.getName())) {
             throw new IllegalArgumentException("Inconsistent player name value provided as service variable.");
         }
-        Optional<Player> optional = playerService.getPlayerById(name);
+        Optional<Player> optional = playerService.getPlayerByName(name);
         Player playerInDb = optional.orElseThrow(() -> new NoSuchElementException(getNoSuchPlayerMessage(name)));
-        if (!matches(player.getPassword(), playerInDb.getPassword()) || !playerInDb.getRole().equals(player.getRole()) ) {
+        if (isPasswordChangeRequested(player, playerInDb) || isRoleChangeRequested(player, playerInDb)) {
             if (playerService.updatePlayer(player)) {
-                ApiResponse apiResponse = new ApiResponse(HttpStatus.OK);
-                apiResponse.setMessage(String.format("Player with name: %s modified.", player.getName()));
+                ApiResponse apiResponse = createApiResponse(HttpStatus.OK, "Player with name: %s modified.", player);
                 return new ResponseEntity<>(apiResponse, HttpStatus.OK);
-            }
-            else {
+            } else {
                 throw new IllegalArgumentException("Unidentified service call error.");
             }
         }
         throw new IllegalArgumentException("Nothing to modify: provided player data are identical to data in the database.");
+    }
+
+    private boolean isRoleChangeRequested(Player player, Player playerInDb) {
+        return !playerInDb.getRole().equals(player.getRole());
+    }
+
+    private boolean isPasswordChangeRequested(Player player, Player playerInDb) {
+        return !matches(player.getPassword(), playerInDb.getPassword());
     }
 
     @DeleteMapping("/{name}")
