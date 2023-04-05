@@ -7,8 +7,10 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.web.client.TestRestTemplate;
+import org.springframework.context.annotation.Bean;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.hateoas.CollectionModel;
@@ -17,6 +19,9 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.test.context.support.WithMockUser;
 
 import java.util.*;
 
@@ -38,7 +43,18 @@ public class PlayerControllerTest {
     @MockBean
     PlayerService playerService;
 
+    @TestConfiguration
+    @EnableWebSecurity
+    static class TestSecurityConfig {
+        @Bean
+        protected void configure(HttpSecurity http) throws Exception {
+            http.authorizeRequests().anyRequest().permitAll()
+                    .and().csrf().disable();
+        }
+    }
+
     @Test()
+    @WithMockUser(username="admin",roles={"USER","ADMIN"})
     public void shouldRetrieveAllPlayersInDatabase() {
         when(playerService.getAllPlayers()).thenReturn(getThreePlayerList());
 

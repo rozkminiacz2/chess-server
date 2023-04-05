@@ -35,12 +35,20 @@ public class JwtSecurityConfig {
 
     @Bean
     public SecurityFilterChain configure(final HttpSecurity http) throws Exception {
-        return http.cors().and()
-                .csrf().disable()
+        return http
+                .cors()
+                .and()
+                .csrf()
+                .disable()
                 .authorizeHttpRequests()
-                .requestMatchers("/", "/authenticate").permitAll()
-                .anyRequest().hasRole(USER).and()
-                .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS).and()
+                .requestMatchers("/", "/authenticate")
+                .permitAll()
+                .anyRequest()
+                .hasRole(USER)
+                .and()
+                .sessionManagement()
+                .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                .and()
                 .addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();
     }

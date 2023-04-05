@@ -27,30 +27,39 @@ public class JwtRequestFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(final HttpServletRequest request, final HttpServletResponse response,
                                     final FilterChain chain) throws ServletException, IOException {
-        // look for Bearer auth header
+
         final String header = request.getHeader(HttpHeaders.AUTHORIZATION);
-        if (header == null || !header.startsWith("Bearer ")) {
+        if (isBearerNotDefined(header)) {
             chain.doFilter(request, response);
             return;
         }
 
-        final String token = header.substring(7);
-        final String username = jwtTokenService.validateTokenAndGetUsername(token);
+        final String username = getUserName(header);
         if (username == null) {
-            // validation failed or token expired
             chain.doFilter(request, response);
             return;
         }
 
-        // set user details on spring security context
         final UserDetails userDetails = jwtUserDetailsService.loadUserByUsername(username);
-        final UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
-                userDetails, null, userDetails.getAuthorities());
-        authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+        final UsernamePasswordAuthenticationToken authentication = createAuthenticationToken(request, userDetails);
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
-        // continue with authenticated user
         chain.doFilter(request, response);
     }
 
+    private boolean isBearerNotDefined(String header) {
+        return header == null || !header.startsWith("Bearer ");
+    }
+
+    private String getUserName(String header) {
+        final String token = header.substring(7);
+        return jwtTokenService.validateTokenAndGetUsername(token);
+    }
+
+    private UsernamePasswordAuthenticationToken createAuthenticationToken(HttpServletRequest request, UserDetails userDetails) {
+        final UsernamePasswordAuthenticationToken authentication =
+                new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+        authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+        return authentication;
+    }
 }

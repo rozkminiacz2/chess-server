@@ -1,8 +1,13 @@
-package net.pschab.chessserver.rest.security;
+package net.pschab.chessserver.rest.controller;
 
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import net.pschab.chessserver.rest.security.JwtTokenService;
+import net.pschab.chessserver.rest.security.JwtUserDetailsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -15,7 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
 @RestController
-public class AuthenticationResource {
+public class AuthenticationController {
 
     @Autowired
     private AuthenticationManager authenticationManager;
@@ -48,6 +53,9 @@ public class AuthenticationResource {
         return authenticationResponse;
     }
 
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
     public static class AuthenticationRequest {
 
         @NotNull
@@ -57,43 +65,44 @@ public class AuthenticationResource {
         @NotNull
         @Size(max = 255)
         private String password;
-
-        public AuthenticationRequest() {
-        }
-
-        public AuthenticationRequest(String login, String password) {
-            this.login = login;
-            this.password = password;
-        }
-
-        public String getLogin() {
-            return login;
-        }
-
-        public void setLogin(String login) {
-            this.login = login;
-        }
-
-        public String getPassword() {
-            return password;
-        }
-
-        public void setPassword(String password) {
-            this.password = password;
-        }
+//
+//        public AuthenticationRequest() {
+//        }
+//
+//        public AuthenticationRequest(String login, String password) {
+//            this.login = login;
+//            this.password = password;
+//        }
+//
+//        public String getLogin() {
+//            return login;
+//        }
+//
+//        public void setLogin(String login) {
+//            this.login = login;
+//        }
+//
+//        public String getPassword() {
+//            return password;
+//        }
+//
+//        public void setPassword(String password) {
+//            this.password = password;
+//        }
     }
 
+    @Data
     public static class AuthenticationResponse {
 
         private String accessToken;
 
-        public String getAccessToken() {
-            return accessToken;
-        }
-
-        public void setAccessToken(String accessToken) {
-            this.accessToken = accessToken;
-        }
+//        public String getAccessToken() {
+//            return accessToken;
+//        }
+//
+//        public void setAccessToken(String accessToken) {
+//            this.accessToken = accessToken;
+//        }
     }
 }
 
