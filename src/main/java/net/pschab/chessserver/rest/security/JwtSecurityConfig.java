@@ -3,6 +3,7 @@ package net.pschab.chessserver.rest.security;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -34,6 +35,7 @@ public class JwtSecurityConfig {
     }
 
     @Bean
+    @Profile("secure")
     public SecurityFilterChain configure(final HttpSecurity http) throws Exception {
         return http
                 .cors()
@@ -51,6 +53,12 @@ public class JwtSecurityConfig {
                 .and()
                 .addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();
+    }
+
+    @Bean
+    @Profile("insecure")
+    public SecurityFilterChain configureTest(final HttpSecurity http) throws Exception {
+        return http.cors().and().csrf().disable().build();
     }
 
 }
