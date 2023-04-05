@@ -43,16 +43,6 @@ public class PlayerControllerTest {
     @MockBean
     PlayerService playerService;
 
-    @TestConfiguration
-    @EnableWebSecurity
-    static class TestSecurityConfig {
-        @Bean
-        protected void configure(HttpSecurity http) throws Exception {
-            http.authorizeRequests().anyRequest().permitAll()
-                    .and().csrf().disable();
-        }
-    }
-
     @Test()
     @WithMockUser(username="admin",roles={"USER","ADMIN"})
     public void shouldRetrieveAllPlayersInDatabase() {
