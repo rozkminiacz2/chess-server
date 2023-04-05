@@ -44,7 +44,6 @@ public class PlayerControllerTest {
     PlayerService playerService;
 
     @Test()
-    @WithMockUser(username="admin",roles={"USER","ADMIN"})
     public void shouldRetrieveAllPlayersInDatabase() {
         when(playerService.getAllPlayers()).thenReturn(getThreePlayerList());
 
