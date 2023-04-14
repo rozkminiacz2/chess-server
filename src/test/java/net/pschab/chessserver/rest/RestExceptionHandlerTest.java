@@ -9,7 +9,6 @@ import java.util.NoSuchElementException;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-
 public class RestExceptionHandlerTest {
     private final RestExceptionHandler handler = new RestExceptionHandler();
 

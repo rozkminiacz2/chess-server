@@ -2,11 +2,12 @@ package net.pschab.chessserver.util;
 
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.crypto.password.Pbkdf2PasswordEncoder;
 
 public class HashEncoder {
 
-    private static final PasswordEncoder encoder = new BCryptPasswordEncoder();
+    private static final PasswordEncoderProvider passwordEncoderProvider = PasswordEncoderProvider.getInstance();
+    private static final PasswordEncoder encoder = passwordEncoderProvider.provide();
+
 
     public static String encode(String text) {
         return encoder.encode(text);

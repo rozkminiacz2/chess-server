@@ -1,5 +1,7 @@
 package net.pschab.chessserver.rest.security;
 
+import net.pschab.chessserver.model.Role;
+import net.pschab.chessserver.util.PasswordEncoderProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -14,18 +16,18 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
-import static net.pschab.chessserver.rest.security.JwtUserDetailsService.USER;
-
 @Configuration
 @EnableWebSecurity
 public class JwtSecurityConfig {
+
+    private final PasswordEncoderProvider passwordEncoderProvider = PasswordEncoderProvider.getInstance();
 
     @Autowired
     private JwtRequestFilter jwtRequestFilter;
 
     @Bean
     public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
+        return passwordEncoderProvider.provide();
     }
 
     @Bean
@@ -46,7 +48,7 @@ public class JwtSecurityConfig {
                 .requestMatchers("/", "/authenticate")
                 .permitAll()
                 .anyRequest()
-                .hasRole(USER)
+                .hasRole(Role.USER.toString())
                 .and()
                 .sessionManagement()
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
@@ -58,7 +60,12 @@ public class JwtSecurityConfig {
     @Bean
     @Profile("insecure")
     public SecurityFilterChain configureTest(final HttpSecurity http) throws Exception {
-        return http.cors().and().csrf().disable().build();
+        return http
+                .cors()
+                .and()
+                .csrf()
+                .disable()
+                .build();
     }
 
 }

@@ -1,6 +1,7 @@
 package net.pschab.chessserver.rest.security;
 
 import net.pschab.chessserver.model.Player;
+import net.pschab.chessserver.model.Role;
 import net.pschab.chessserver.service.PlayerService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -14,9 +15,6 @@ import java.util.Collections;
 @Service
 public class JwtUserDetailsService implements UserDetailsService {
 
-    public static final String USER = "USER";
-    public static final String ROLE_USER = "ROLE_" + USER;
-
     @Autowired
     private PlayerService playerService;
 
@@ -28,7 +26,7 @@ public class JwtUserDetailsService implements UserDetailsService {
     }
 
     private JwtUserDetails getJwtUserDetails(Player player) {
-        return new JwtUserDetails(player.getName(), player.getPassword(), Collections.singletonList(new SimpleGrantedAuthority(ROLE_USER)));
+        return new JwtUserDetails(player.getName(), player.getPassword(), Collections.singletonList(new SimpleGrantedAuthority(Role.USER.toString())));
     }
 
 }
