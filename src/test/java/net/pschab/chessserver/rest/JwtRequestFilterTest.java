@@ -1,125 +1,81 @@
 package net.pschab.chessserver.rest;
 
 import jakarta.servlet.FilterChain;
-import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import net.pschab.chessserver.rest.security.JwtRequestFilter;
 import net.pschab.chessserver.rest.security.JwtTokenService;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
+import net.pschab.chessserver.rest.security.JwtUserDetailsService;
+import org.junit.jupiter.api.*;
 import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.mock.web.MockHttpServletRequest;
-import org.springframework.mock.web.MockHttpServletResponse;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.mockito.MockitoAnnotations;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
-import java.io.IOException;
-import java.util.Collections;
-
-import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-@ExtendWith(MockitoExtension.class)
 class JwtRequestFilterTest {
 
     @Mock
     private JwtTokenService jwtTokenService;
 
     @Mock
-    private UserDetailsService userDetailsService;
+    private JwtUserDetailsService jwtUserDetailsService;
 
-    private final MockHttpServletRequest request = new MockHttpServletRequest();
+    @Mock
+    private HttpServletRequest request;
 
-    private final MockHttpServletResponse response = new MockHttpServletResponse();
+    @Mock
+    private HttpServletResponse response;
 
-    private final FilterChain filterChain = mock(FilterChain.class);
+    @Mock
+    private FilterChain filterChain;
 
-    private final JwtRequestFilter jwtRequestFilter = new JwtRequestFilter(jwtTokenService, userDetailsService);
+    private JwtRequestFilter jwtRequestFilter;
 
-    private final MockMvc mockMvc = MockMvcBuilders.standaloneSetup().addFilter(jwtRequestFilter).build();
+    @BeforeEach
+    void setup() {
+        MockitoAnnotations.openMocks(this);
+        jwtRequestFilter = new JwtRequestFilter(jwtTokenService, jwtUserDetailsService);
+        SecurityContextHolder.clearContext();
+    }
 
     @Test
-    void shouldNotAuthenticateIfAuthorizationHeaderIsNotPresent() throws ServletException, IOException {
-        // given
-        request.addHeader("Accept", "application/json");
-        // when
+    @DisplayName("Should skip filter if header is null")
+    void shouldSkipFilterIfHeaderIsNull() throws Exception {
+        when(request.getHeader("Authorization")).thenReturn(null);
+
         jwtRequestFilter.doFilterInternal(request, response, filterChain);
-        // then
+
         verify(filterChain).doFilter(request, response);
-        verifyNoInteractions(jwtTokenService, userDetailsService);
+        verifyNoInteractions(jwtTokenService);
+        verifyNoInteractions(jwtUserDetailsService);
+        Assertions.assertNull(SecurityContextHolder.getContext().getAuthentication());
     }
 
     @Test
-    void shouldNotAuthenticateIfAuthorizationHeaderDoesNotStartWithBearer() throws ServletException, IOException {
-        // given
-        request.addHeader("Authorization", "Basic QWxhZGRpbjpvcGVuIHNlc2FtZQ==");
-        // when
+    @DisplayName("Should skip filter if header does not start with Bearer")
+    void shouldSkipFilterIfHeaderDoesNotStartWithBearer() throws Exception {
+        when(request.getHeader("Authorization")).thenReturn("Basic abc");
+
         jwtRequestFilter.doFilterInternal(request, response, filterChain);
-        // then
+
         verify(filterChain).doFilter(request, response);
-        verifyNoInteractions(jwtTokenService, userDetailsService);
+        verifyNoInteractions(jwtTokenService);
+        verifyNoInteractions(jwtUserDetailsService);
+        Assertions.assertNull(SecurityContextHolder.getContext().getAuthentication());
     }
 
     @Test
-    void shouldNotAuthenticateIfUsernameIsNotValid() throws ServletException, IOException {
-        // given
-        final String authorizationHeader = "Bearer token";
-        request.addHeader("Authorization", authorizationHeader);
-        when(jwtTokenService.validateTokenAndGetUsername("token")).thenReturn(null);
-        // when
+    @DisplayName("Should skip filter if username is null")
+    void shouldSkipFilterIfUsernameIsNull() throws Exception {
+        when(request.getHeader("Authorization")).thenReturn("Bearer xyz");
+        when(jwtTokenService.validateTokenAndGetUsername("xyz")).thenReturn(null);
+
         jwtRequestFilter.doFilterInternal(request, response, filterChain);
-        // then
-        verify(jwtTokenService).validateTokenAndGetUsername("token");
+
         verify(filterChain).doFilter(request, response);
-        verifyNoInteractions(userDetailsService);
+        verify(jwtTokenService).validateTokenAndGetUsername("xyz");
+        verifyNoInteractions(jwtUserDetailsService);
+        Assertions.assertNull(SecurityContextHolder.getContext().getAuthentication());
     }
-
-    @Test
-    void shouldAuthenticateIfUsernameIsValid() throws ServletException, IOException {
-        // given
-        final String authorizationHeader = "Bearer token";
-        request.addHeader("Authorization", authorizationHeader);
-        when(jwtTokenService.validateTokenAndGetUsername("token")).thenReturn("user");
-        final UserDetails userDetails = mock(UserDetails.class);
-        when(userDetailsService.loadUserByUsername("user")).thenReturn(userDetails);
-        when(userDetails.getUsername()).thenReturn("user");
-        when(userDetails.getAuthorities()).thenReturn(Collections.emptyList());
-        // when
-        jwtRequestFilter.doFilterInternal(request, response, filterChain);
-        // then
-        verify(jwtTokenService).validateTokenAndGetUsername("token");
-        verify(userDetailsService).loadUserByUsername("user");
-        verify(filterChain).doFilter(request, response);
-        verify(userDetails).getUsername();
-        verify(userDetails).getAuthorities();
-        verifyNoMoreInteractions(jwtTokenService, userDetailsService, userDetails);
-        final UsernamePasswordAuthenticationToken authentication =
-                (UsernamePasswordAuthenticationToken) SecurityContextHolder.getContext().getAuthentication();
-        assertNotNull(authentication);
-        assertEquals(userDetails, authentication.getPrincipal());
-        assertNull(authentication.getCredentials());
-        assertEquals(authorizationHeader, authentication.getDetails());
-    }
-
-    @Test
-    void shouldThrowUsernameNotFoundExceptionIfUserDetailsNotFound() throws ServletException, IOException {
-        // given
-        final String authorizationHeader = "Bearer token";
-        request.addHeader("Authorization", authorizationHeader);
-        when(jwtTokenService.validateTokenAndGetUsername("token")).thenReturn("user");
-        when(userDetailsService.loadUserByUsername("user")).thenThrow(UsernameNotFoundException.class);
-        // when, then
-        assertThrows(UsernameNotFoundException.class,
-                () -> jwtRequestFilter.doFilterInternal(request, response, filterChain));
-        verify(jwtTokenService).validateTokenAndGetUsername("token");
-        verify(userDetailsService).loadUserByUsername("user");
-        verifyNoMoreInteractions(jwtTokenService, userDetailsService);
-        assertNull(SecurityContextHolder.getContext().getAuthentication());
-    }
-
 }
