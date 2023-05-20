@@ -10,10 +10,12 @@ import org.springframework.stereotype.Service;
 
 import java.time.Duration;
 import java.time.Instant;
+import java.util.logging.Logger;
 
 @Service
 public class JwtTokenService {
 
+    private static final Logger logger = Logger.getLogger(JwtTokenService.class.getName());
     private static final Duration JWT_TOKEN_VALIDITY = Duration.ofMinutes(20);
 
     private final Algorithm hmac512;
@@ -38,7 +40,7 @@ public class JwtTokenService {
         try {
             return verifier.verify(token).getSubject();
         } catch (final JWTVerificationException verificationEx) {
-            //log.warn("token invalid: {}", verificationEx.getMessage());
+            logger.warning(String.format("token invalid: %s", verificationEx.getMessage()));
             return null;
         }
     }
