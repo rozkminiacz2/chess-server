@@ -1,13 +1,14 @@
 package net.pschab.chessserver.security;
 
 import net.pschab.chessserver.rest.security.JwtTokenService;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collections;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class JwtTokenServiceTest {
 
@@ -24,19 +25,16 @@ public class JwtTokenServiceTest {
 
         String token = jwtTokenService.generateToken(userDetails);
 
-        Assertions.assertNotNull(token);
-
+        assertThat(token).isNotNull();
         String username = jwtTokenService.validateTokenAndGetUsername(token);
-        Assertions.assertEquals(userDetails.getUsername(), username);
+        assertThat(userDetails.getUsername()).isEqualTo(username);
     }
 
     @Test
     void validateTokenAndGetUsernameShouldReturnNullForInvalidToken() {
-        String invalidToken = "invalid.token";
+        String username = jwtTokenService.validateTokenAndGetUsername("invalid.token");
 
-        String username = jwtTokenService.validateTokenAndGetUsername(invalidToken);
-
-        Assertions.assertNull(username);
+        assertThat(username).isNull();
     }
 }
 

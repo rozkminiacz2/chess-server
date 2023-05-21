@@ -47,8 +47,7 @@ public class GameControllerTest {
         when(gameService.getAllGames()).thenReturn(getThreeGameList());
 
         ResponseEntity<CollectionModel<EntityModel<Game>>> response =
-                template.exchange("/games", HttpMethod.GET, null, new ParameterizedTypeReference<>() {
-                });
+                template.exchange("/games", HttpMethod.GET, null, new ParameterizedTypeReference<>() {});
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         List<Game> games = getGameList(response.getBody());
