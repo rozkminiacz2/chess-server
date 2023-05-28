@@ -7,10 +7,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.web.client.TestRestTemplate;
-import org.springframework.context.annotation.Bean;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.hateoas.CollectionModel;
@@ -19,16 +17,11 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
 
 import java.util.*;
 
 import static net.pschab.chessserver.TestPlayerHelper.*;
-import static net.pschab.chessserver.rest.ControllerTestHelper.assertApiError;
-import static net.pschab.chessserver.rest.ControllerTestHelper.assertApiResponse;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
@@ -69,10 +62,9 @@ public class PlayerControllerTest {
         ResponseEntity<ApiError> response = template.getForEntity("/players", ApiError.class);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
-        assertApiError(response.getBody(),
-                HttpStatus.NOT_FOUND,
-                "The item does not exist.",
-                "There are no players in the database.");
+        ApiError expectedError =
+                new ApiError(HttpStatus.NOT_FOUND, "The item does not exist.", "There are no players in the database.");
+        assertThat(response.getBody()).isEqualTo(expectedError);
     }
 
     @Test()
@@ -93,10 +85,9 @@ public class PlayerControllerTest {
         ResponseEntity<ApiError> response = template.getForEntity("/players/{name}", ApiError.class, params);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
-        assertApiError(response.getBody(),
-                HttpStatus.NOT_FOUND,
-                "The item does not exist.",
-                String.format("There is no player with name: %s in the database.", playerName));
+        ApiError expectedError =
+                new ApiError(HttpStatus.NOT_FOUND, "The item does not exist.", String.format("There is no player with name: %s in the database.", playerName));
+        assertThat(response.getBody()).isEqualTo(expectedError);
     }
 
     @Test()
@@ -107,9 +98,8 @@ public class PlayerControllerTest {
         ResponseEntity<ApiResponse> response = template.postForEntity("/players", playerToAdd, ApiResponse.class);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CREATED);
-        assertApiResponse(response.getBody(),
-                HttpStatus.CREATED,
-                String.format("Player with name: %s created.", playerName));
+        ApiResponse expectedResponse = new ApiResponse(HttpStatus.CREATED, String.format("Player with name: %s created.", playerName));
+        assertThat(response.getBody()).isEqualTo(expectedResponse);
     }
 
     @Test()
@@ -121,10 +111,9 @@ public class PlayerControllerTest {
         ResponseEntity<ApiError> response = template.postForEntity("/players", playerToAdd, ApiError.class);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
-        assertApiError(response.getBody(),
-                HttpStatus.BAD_REQUEST,
-                "Duplicate key.",
-                String.format("Player with name %s already exists.", playerName));
+        ApiError expectedError =
+                new ApiError(HttpStatus.BAD_REQUEST, "Duplicate key.", String.format("Player with name %s already exists.", playerName));
+        assertThat(response.getBody()).isEqualTo(expectedError);
     }
 
     @Test()
@@ -138,9 +127,8 @@ public class PlayerControllerTest {
                 template.exchange("/players/{name}", HttpMethod.PUT, new HttpEntity<>(playerToHavePasswordChanged), ApiResponse.class, params);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-        assertApiResponse(response.getBody(),
-                HttpStatus.OK,
-                String.format("Player with name: %s modified.", playerName));
+        ApiResponse expectedResponse = new ApiResponse(HttpStatus.OK, String.format("Player with name: %s modified.", playerName));
+        assertThat(response.getBody()).isEqualTo(expectedResponse);
     }
 
     @Test()
@@ -152,10 +140,9 @@ public class PlayerControllerTest {
                 template.exchange("/players/{name}", HttpMethod.PUT, new HttpEntity<>(playerToHavePasswordChanged), ApiError.class, params);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
-        assertApiError(response.getBody(),
-                HttpStatus.BAD_REQUEST,
-                "Invalid data.",
-                "Inconsistent player name value provided as service variable.");
+        ApiError expectedError =
+                new ApiError(HttpStatus.BAD_REQUEST, "Invalid data.", "Inconsistent player name value provided as service variable.");
+        assertThat(response.getBody()).isEqualTo(expectedError);
     }
 
     @Test()
@@ -169,9 +156,8 @@ public class PlayerControllerTest {
                 template.exchange("/players/{name}", HttpMethod.PUT, new HttpEntity<>(playerToHaveRoleChanged), ApiResponse.class, params);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-        assertApiResponse(response.getBody(),
-                HttpStatus.OK,
-                String.format("Player with name: %s modified.", playerName));
+        ApiResponse expectedResponse = new ApiResponse(HttpStatus.OK, String.format("Player with name: %s modified.", playerName));
+        assertThat(response.getBody()).isEqualTo(expectedResponse);
     }
 
     @Test()
@@ -184,10 +170,9 @@ public class PlayerControllerTest {
                 template.exchange("/players/{name}", HttpMethod.PUT, new HttpEntity<>(playerToHavePasswordChanged), ApiError.class, params);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
-        assertApiError(response.getBody(),
-                HttpStatus.BAD_REQUEST,
-                "Invalid data.",
-                "Nothing to modify: provided player data are identical to data in the database.");
+        ApiError expectedError =
+                new ApiError(HttpStatus.BAD_REQUEST, "Invalid data.", "Nothing to modify: provided player data are identical to data in the database.");
+        assertThat(response.getBody()).isEqualTo(expectedError);
     }
 
     @Test()
@@ -209,10 +194,9 @@ public class PlayerControllerTest {
         ResponseEntity<ApiError> response = template.exchange("/players/{name}", HttpMethod.DELETE, new HttpEntity<>(null), ApiError.class, params);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
-        assertApiError(response.getBody(),
-                HttpStatus.NOT_FOUND,
-                "The item does not exist.",
-                String.format("There is no player with name: %s in the database.", playerName));
+        ApiError expectedError =
+                new ApiError(HttpStatus.NOT_FOUND, "The item does not exist.", String.format("There is no player with name: %s in the database.", playerName));
+        assertThat(response.getBody()).isEqualTo(expectedError);
     }
 
     private static List<Player> getPlayerList(CollectionModel<EntityModel<Player>> collectionModel) {

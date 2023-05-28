@@ -23,8 +23,6 @@ import java.util.*;
 
 import static net.pschab.chessserver.TestGameHelper.createTestGame;
 import static net.pschab.chessserver.TestGameHelper.getThreeGameList;
-import static net.pschab.chessserver.rest.ControllerTestHelper.assertApiError;
-import static net.pschab.chessserver.rest.ControllerTestHelper.assertApiResponse;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
@@ -72,10 +70,9 @@ public class GameControllerTest {
         ResponseEntity<ApiError> response = template.getForEntity("/games", ApiError.class);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
-        assertApiError(response.getBody(),
-                HttpStatus.NOT_FOUND,
-                "The item does not exist.",
-                "There are no games in the database.");
+        ApiError expectedError =
+                new ApiError(HttpStatus.NOT_FOUND, "The item does not exist.", "There are no games in the database.");
+        assertThat(response.getBody()).isEqualTo(expectedError);
     }
 
     @Test()
@@ -98,10 +95,9 @@ public class GameControllerTest {
         ResponseEntity<ApiError> response = template.getForEntity("/games/{id}", ApiError.class, params);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
-        assertApiError(response.getBody(),
-                HttpStatus.NOT_FOUND,
-                "The item does not exist.",
-                String.format("There is no game with id: %s in the database.", gameId));
+        ApiError expectedError =
+                new ApiError(HttpStatus.NOT_FOUND, "The item does not exist.", String.format("There is no game with id: %s in the database.", gameId));
+        assertThat(response.getBody()).isEqualTo(expectedError);
     }
 
     @Test()
@@ -112,9 +108,8 @@ public class GameControllerTest {
         ResponseEntity<ApiResponse> response = template.postForEntity("/games", gameToAdd, ApiResponse.class);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CREATED);
-        assertApiResponse(response.getBody(),
-                HttpStatus.CREATED,
-                String.format("Game with id: %s created.", gameToAdd.getId()));
+        ApiResponse expectedResponse = new ApiResponse(HttpStatus.CREATED, String.format("Game with id: %s created.", gameToAdd.getId()));
+        assertThat(response.getBody()).isEqualTo(expectedResponse);
     }
 
     @Test()
@@ -126,10 +121,9 @@ public class GameControllerTest {
         ResponseEntity<ApiError> response = template.postForEntity("/games", gameToAdd, ApiError.class);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
-        assertApiError(response.getBody(),
-                HttpStatus.BAD_REQUEST,
-                "Duplicate key.",
-                String.format("Game with id %s already exists.", gameToAdd));
+        ApiError expectedError =
+                new ApiError(HttpStatus.BAD_REQUEST, "Duplicate key.", String.format("Game with id %s already exists.", gameToAdd));
+        assertThat(response.getBody()).isEqualTo(expectedError);
     }
 
     @Test()
@@ -144,9 +138,8 @@ public class GameControllerTest {
                 template.exchange("/games/{id}", HttpMethod.PUT, new HttpEntity<>(gameToHaveHistoryUpdated), ApiResponse.class, params);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-        assertApiResponse(response.getBody(),
-                HttpStatus.OK,
-                String.format("Game with id: %s modified.", gameId));
+        ApiResponse expectedResponse = new ApiResponse(HttpStatus.OK, String.format("Game with id: %s modified.", gameId));
+        assertThat(response.getBody()).isEqualTo(expectedResponse);
     }
 
     @Test()
@@ -158,10 +151,9 @@ public class GameControllerTest {
                 template.exchange("/games/{id}", HttpMethod.PUT, new HttpEntity<>(gameToBeUpdated), ApiError.class, params);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
-        assertApiError(response.getBody(),
-                HttpStatus.BAD_REQUEST,
-                "Invalid data.",
-                "Inconsistent game id value provided as service variable.");
+        ApiError expectedError =
+                new ApiError(HttpStatus.BAD_REQUEST, "Invalid data.", "Inconsistent game id value provided as service variable.");
+        assertThat(response.getBody()).isEqualTo(expectedError);
     }
 
     @Test()
@@ -176,9 +168,8 @@ public class GameControllerTest {
                 template.exchange("/games/{id}", HttpMethod.PUT, new HttpEntity<>(gameToHaveStatusUpdated), ApiResponse.class, params);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-        assertApiResponse(response.getBody(),
-                HttpStatus.OK,
-                String.format("Game with id: %s modified.", gameId));
+        ApiResponse expectedResponse = new ApiResponse(HttpStatus.OK, String.format("Game with id: %s modified.", gameId));
+        assertThat(response.getBody()).isEqualTo(expectedResponse);
     }
 
 
@@ -193,10 +184,9 @@ public class GameControllerTest {
                 template.exchange("/games/{id}", HttpMethod.PUT, new HttpEntity<>(gameToBeUpdated), ApiError.class, params);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
-        assertApiError(response.getBody(),
-                HttpStatus.BAD_REQUEST,
-                "Invalid data.",
-                "Nothing to modify: provided game data are identical to data in the database.");
+        ApiError expectedError =
+                new ApiError(HttpStatus.BAD_REQUEST, "Invalid data.", "Nothing to modify: provided game data are identical to data in the database.");
+        assertThat(response.getBody()).isEqualTo(expectedError);
     }
 
     @Test()
@@ -218,10 +208,9 @@ public class GameControllerTest {
         ResponseEntity<ApiError> response = template.exchange("/games/{id}", HttpMethod.DELETE, new HttpEntity<>(null), ApiError.class, params);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
-        assertApiError(response.getBody(),
-                HttpStatus.NOT_FOUND,
-                "The item does not exist.",
-                String.format("There is no game with id: %s in the database.", gameId));
+        ApiError expectedError =
+                new ApiError(HttpStatus.NOT_FOUND, "The item does not exist.", String.format("There is no game with id: %s in the database.", gameId));
+        assertThat(response.getBody()).isEqualTo(expectedError);
     }
 
     private static Map<String, Integer> createParams(Integer gameId) {
