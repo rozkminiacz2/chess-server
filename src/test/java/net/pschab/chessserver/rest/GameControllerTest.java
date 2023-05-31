@@ -41,7 +41,7 @@ public class GameControllerTest {
     GameService gameService;
 
     @Test()
-    public void shouldRetrieveAllPlayersInDatabase() {
+    public void shouldRetrieveAllGamesInDatabase() {
         when(gameService.getAllGames()).thenReturn(getThreeGameList());
 
         ResponseEntity<CollectionModel<EntityModel<Game>>> response =
@@ -88,7 +88,7 @@ public class GameControllerTest {
 
 
     @Test()
-    public void shouldNotGetAnyPlayerDueNoGameWithIdExists() {
+    public void shouldNotGetAnyGameDueNoGameWithIdExists() {
         when(gameService.getGameById(gameId)).thenReturn(Optional.empty());
         Map<String, Integer> params = createParams(gameId);
 

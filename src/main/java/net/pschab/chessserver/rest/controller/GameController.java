@@ -35,26 +35,6 @@ public class GameController {
         }
     }
 
-//    @GetMapping()
-//    public ResponseEntity<CollectionModel<EntityModel<Game>>> getAllGamesHostedByPlayer(@RequestParam String hostName) {
-//        List<Game> games = gameService.getAllGamesHostedByPlayer(hostName);
-//        if (games.isEmpty()) {
-//            throw new NoSuchElementException(String.format("There are no games hosted by player: %s in the database.", hostName));
-//        } else {
-//            return new ResponseEntity<>(gameModelAssembler.toCollectionModel(games), HttpStatus.OK);
-//        }
-//    }
-
-//    @GetMapping()
-//    public ResponseEntity<CollectionModel<EntityModel<Game>>> getAllGamesGuestedByPlayer(@RequestParam String guestName) {
-//        List<Game> games = gameService.getAllGamesGuestedByPlayer(guestName);
-//        if (games.isEmpty()) {
-//            throw new NoSuchElementException(String.format("There are no games hosted by player: %s in the database.", guestName));
-//        } else {
-//            return new ResponseEntity<>(gameModelAssembler.toCollectionModel(games), HttpStatus.OK);
-//        }
-//    }
-
     @GetMapping("/{id}")
     public ResponseEntity<EntityModel<Game>> getById(@PathVariable("id") Integer id) {
         Optional<Game> gameOptional = gameService.getGameById(id);

@@ -53,7 +53,8 @@ public class JwtUserDetailsServiceTest {
 
         assertThat(USERNAME).isEqualTo(userDetails.getUsername());
         assertThat(PASSWORD).isEqualTo(userDetails.getPassword());
-        assertThat(Optional.of(new SimpleGrantedAuthority(Role.USER.toString()))).isEqualTo(userDetails.getAuthorities().stream().findFirst());
+        assertThat(Optional.of(new SimpleGrantedAuthority(Role.USER.toString())))
+                .isEqualTo(userDetails.getAuthorities().stream().findFirst());
     }
 
     @Test

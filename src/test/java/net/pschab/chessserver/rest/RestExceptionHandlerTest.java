@@ -15,7 +15,7 @@ public class RestExceptionHandlerTest {
     @Test
     void shouldValidateDuplicateKeyExceptionApiError() {
         String errorMessage = "Player with name PlayerRestTester1 already exists.";
-        final ResponseEntity<Object> responseEntity =
+        ResponseEntity<Object> responseEntity =
                 handler.handleDuplicateKeyException(new DuplicateKeyException(errorMessage));
 
         assertThat(responseEntity.getBody()).isInstanceOf(ApiError.class);
@@ -30,7 +30,7 @@ public class RestExceptionHandlerTest {
     @Test
     void shouldValidateIllegalArgumentExceptionApiError() {
         String errorMessage = "Player name cannot be empty.";
-        final ResponseEntity<Object> responseEntity =
+        ResponseEntity<Object> responseEntity =
                 handler.handleIllegalArgumentException(new IllegalArgumentException(errorMessage));
 
         assertThat(responseEntity.getBody()).isInstanceOf(ApiError.class);
@@ -45,7 +45,7 @@ public class RestExceptionHandlerTest {
     @Test
     void shouldValidateNoSuchElementExceptionApiError() {
         String errorMessage = "No player with name: PlayerRestTester2";
-        final ResponseEntity<Object> responseEntity =
+        ResponseEntity<Object> responseEntity =
                 handler.handleNoSuchElementException(new NoSuchElementException(errorMessage));
 
         assertThat(responseEntity.getBody()).isInstanceOf(ApiError.class);
