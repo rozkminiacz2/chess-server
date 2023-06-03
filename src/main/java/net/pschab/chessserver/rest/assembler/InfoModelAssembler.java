@@ -21,7 +21,7 @@ public class InfoModelAssembler implements RepresentationModelAssembler<Info, En
                 linkTo(methodOn(PlayerController.class).getAllPlayers())
                         .withRel("players")
                         .withType(HttpMethod.GET.toString()),
-                linkTo(methodOn(GameController.class).getAllGames())
+                linkTo(methodOn(GameController.class).getAllGames("hostName","guestName"))
                         .withRel("games")
                         .withType(HttpMethod.GET.toString()));
     }

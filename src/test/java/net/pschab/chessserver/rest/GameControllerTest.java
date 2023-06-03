@@ -13,16 +13,14 @@ import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.EntityModel;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.test.context.ActiveProfiles;
 
 import java.util.*;
 
 import static net.pschab.chessserver.TestGameHelper.createTestGame;
 import static net.pschab.chessserver.TestGameHelper.getThreeGameList;
+import static net.pschab.chessserver.TestPlayerHelper.PLAYER_NAME;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
@@ -34,6 +32,9 @@ public class GameControllerTest {
 
     private final Integer gameId = 1;
     private final Integer wrongId = 2;
+
+    private final String playerName = PLAYER_NAME.concat("1");
+
     @Autowired
     private TestRestTemplate template;
 
@@ -61,6 +62,34 @@ public class GameControllerTest {
                 .map(EntityModel::getContent)
                 .filter(Objects::nonNull)
                 .toList();
+    }
+
+    @Test()
+    public void shouldRetrieveAllGamesHostedByPlayer() {
+        when(gameService.getAllGamesHostedByPlayer(playerName)).thenReturn(getThreeGameList());
+        ResponseEntity<CollectionModel<EntityModel<Game>>> response =
+                template.exchange("/games?hostName={playerName}", HttpMethod.GET, null, new ParameterizedTypeReference<>() {}, playerName);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        List<Game> games = getGameList(response.getBody());
+        assertThat(games).isNotNull().isNotEmpty().hasSize(3);
+        assertThat(games).contains(createTestGame(1));
+        assertThat(games).contains(createTestGame(2));
+        assertThat(games).contains(createTestGame(3));
+    }
+
+    @Test()
+    public void shouldRetrieveAllGamesGuestedByPlayer() {
+        when(gameService.getAllGamesGuestedByPlayer(playerName)).thenReturn(getThreeGameList());
+        ResponseEntity<CollectionModel<EntityModel<Game>>> response =
+                template.exchange("/games?guestName={playerName}", HttpMethod.GET, null, new ParameterizedTypeReference<>() {}, playerName);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        List<Game> games = getGameList(response.getBody());
+        assertThat(games).isNotNull().isNotEmpty().hasSize(3);
+        assertThat(games).contains(createTestGame(1));
+        assertThat(games).contains(createTestGame(2));
+        assertThat(games).contains(createTestGame(3));
     }
 
     @Test()

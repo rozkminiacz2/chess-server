@@ -23,7 +23,7 @@ public class GameModelAssembler implements RepresentationModelAssembler<Game, En
                 linkTo(methodOn(GameController.class).deleteGame(game.getId()))
                         .withRel("delete")
                         .withType(HttpMethod.DELETE.toString()),
-                linkTo(methodOn(GameController.class).getAllGames())
+                linkTo(methodOn(GameController.class).getAllGames("hostName","guestName"))
                         .withRel("players")
                         .withType(HttpMethod.GET.toString()));
     }

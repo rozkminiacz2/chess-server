@@ -27,8 +27,6 @@ public class PlayerController {
     @Autowired
     PlayerModelAssembler playerModelAssembler;
 
-    //TODO add security
-
     @GetMapping()
     public ResponseEntity<CollectionModel<EntityModel<Player>>> getAllPlayers() {
         List<Player> players = playerService.getAllPlayers();
